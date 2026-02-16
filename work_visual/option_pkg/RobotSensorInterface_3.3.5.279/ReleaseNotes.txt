@@ -1,0 +1,122 @@
+				 ============================
+				  R E L E A S E    N O T E S
+				 ============================
+
+			    KUKA.RobotSensorInterface 3.3
+
+			 Copyright (c) 2018 KUKA Deutschland GmbH
+				     All rights reserved.
+					     July 2018
+
+                    
+--------------------------------------
+Version: RobotSensorInterface 3.3.5
+--------------------------------------
+	 	Bugfixes:
+	=================
+	• fixed status output of PosAct-Object (CRDB 71232)
+   • fixed robot axis movement by external axis movement (CRDB 71281)
+	
+
+
+--------------------------------------
+Version: RobotSensorInterface 3.3.4
+--------------------------------------
+	System Requirements:
+	=================
+	• KR C4 robot controller
+	• KUKA System Software KSS8.3 (V8.3.15 or higher)
+   • KUKA System Software VSS8.3 (V8.3.14 or higher)
+	
+	Advice: 
+	The product care of RSI for KSS8.4 has been discontinued.
+   For KSS8.4 please use the release RobotSensorInterface 3.3.2.
+
+	 	Bugfixes:
+	=================
+	• improved RSI control from submit interpreter (CRDB 69595)
+	• improved behavior of RSI Monitor object (CRDB 70085)
+	
+
+
+--------------------------------------
+Version: RobotSensorInterface 3.3.3
+--------------------------------------
+	System Requirements:
+	=================
+	• KR C4 robot controller
+	• KUKA System Software KSS8.3 (V8.3.15 or higher)
+    • KUKA System Software VSS8.3 (V8.3.14 or higher)
+	
+	Advice: 
+	The product care of RSI for KSS8.4 has been discontinued.
+    For KSS8.4 please use the release RobotSensorInterface 3.3.2.
+
+	New Functionality:
+	=================
+	• RSI.dat keeps customer changes after an update
+	• Online help available
+
+	Bugfixes:
+	=================
+	• improved cycle time monitoring
+
+
+--------------------------------------
+Version: RobotSensorInterface 3.3.2
+--------------------------------------
+	System Requirements:
+	=================
+	• KR C4 robot controller
+	• KUKA System Software KSS8.3 (V8.3.15 or higher)
+    • KUKA System Software VSS8.3 (V8.3.14 or higher)
+	• KUKA System Software KSS8.4
+
+	New Functionality:
+	=================
+	• RobotSensorInterface 3.3.2 now supports VSS 8.3
+	• customer documentation has been improved
+
+	Bugfixes:
+	=================
+	• additional KRL constants in RSI library
+
+
+--------------------------------------
+Version: RobotSensorInterface 3.3.1
+--------------------------------------
+	System Requirements:
+	=================
+	• KR C4 robot controller
+	• KUKA System Software KSS8.3 (V8.3.15 or higher)
+	• KUKA System Software KSS8.4
+
+	New Functionality:
+	=================
+	• RobotSensorInterface 3.3.1 now support integrated KOP installation via WorkVisual 4.0
+	• improved Ethernet functionality for SeamTech Tracking
+
+	Bugfixes:
+	=================
+	• corrected the scale of the y-axis when opening safed data in RSI-Monitor 
+	• the behavior of POSCORRMON in IPO and IPO_FAST mode is now consistent
+	• fixed a sporadic freeze problem when booting
+	
+
+--------------------------------------
+Version: RobotSensorInterface 3.3.0
+--------------------------------------
+	System Requirements:
+	=================
+	• KR C4 robot controller
+	• KUKA System Software KSS8.3 (V8.3.15 or higher)
+	• KUKA System Software KSS8.4
+
+	New Functionality:
+	=================
+	• online dokumentation
+
+	Bugfixes:
+	=================
+	• fixed a systemerror when a PID control object is parameterized with Tn = 0
+	• fixed a problem with objects writing on KRC outputs now in T1/T2 mode when deadman switch was released

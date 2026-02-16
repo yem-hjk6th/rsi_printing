@@ -1,0 +1,105 @@
+DEF aut_cam( )
+
+DECL INT ret
+DECL INT CONTID
+
+BAS (#INITMOV,0 )
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$ADVANCE = 1
+$VEL.CP = 0.08
+$APO.CDIS = 2.0
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+; -----------------------------
+; Safe high corridor + B-rich set
+; -----------------------------
+PTP {X 860, Y  40, Z 470, A   0, B 90, C   0, E1 0, E2 0, E3 0, E4 0, S 'B110'}
+WAIT SEC 3.00
+
+LIN {X 860, Y  40, Z 440, A   0, B 90, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; B excitation at fixed pose (avoid A/C wrap)
+LIN {X 860, Y  40, Z 440, A   0, B 100, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 860, Y  40, Z 440, A   0, B  80, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 860, Y  40, Z 440, A   0, B 104, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 860, Y  40, Z 440, A   0, B  76, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; Add A/C diversity without crossing +-180
+LIN {X 860, Y  40, Z 440, A -18, B  98, C -12, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 860, Y  40, Z 440, A  18, B  82, C  12, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; -----------------------------
+; Spatial spread, keep high Z and moderate Y
+; -----------------------------
+LIN {X 920, Y 160, Z 430, A -14, B  96, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 920, Y-160, Z 430, A  14, B  84, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 780, Y 160, Z 430, A -12, B  94, C -10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 780, Y-160, Z 430, A  12, B  86, C  10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 940, Y  40, Z 420, A -10, B 100, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 720, Y  40, Z 420, A  10, B  80, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; -----------------------------
+; Mid-Z confirmation pass (still safe corridor)
+; -----------------------------
+LIN {X 900, Y 120, Z 400, A -10, B  96, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 900, Y-120, Z 400, A  10, B  84, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 820, Y 120, Z 400, A  -8, B  94, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 820, Y-120, Z 400, A   8, B  86, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; Return to neutral before RSI off
+LIN {X 860, Y  40, Z 440, A   0, B 90, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 1.00
+
+ret = RSI_OFF()
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+END

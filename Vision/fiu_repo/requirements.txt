@@ -1,0 +1,21 @@
+certifi==2025.10.5
+charset-normalizer==3.4.4
+Cython==3.1.6
+durationpy==0.10
+idna==3.11
+imageio==2.37.0
+lazy_loader==0.4
+networkx==3.4.2
+numpy==2.2.6
+opencv-python==4.12.0.88
+packaging==25.0
+pillow==12.0.0
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+# pyzed @ file:///tmp/selfgz30243/pyzed-5.1-cp310-cp310-linux_x86_64.whl
+requests==2.32.5
+scikit-image==0.25.2
+scipy==1.15.3
+six==1.17.0
+tifffile==2025.5.10
+urllib3==2.5.0

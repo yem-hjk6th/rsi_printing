@@ -1,0 +1,11 @@
+&ACCESS  R
+&PARAM DISKPATH = VW_User/Applikation/EthernetKRL
+&PARAM TPVW_VERSION = 8.3.0
+DEFDAT  vw_EthernetKRL_USER
+;************************************************************
+; CopyRight       KUKA Roboter GmbH 2017
+; last modified   29.05.2017
+; prefix          EKI
+; functions       Data for own error handling 
+;************************************************************
+ENDDAT

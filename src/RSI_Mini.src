@@ -1,0 +1,29 @@
+DEF RSI_Mini( )
+    DECL INT ret
+    DECL INT CONTID
+
+    ;FOLD INI
+      BAS (#INITMOV,0 )
+    ;ENDFOLD (INI)
+
+    BAS(#TOOL, 3)
+    BAS(#BASE, 0)
+    BAS(#VEL_PTP, 10)
+
+    PTP $POS_ACT
+
+    ret = RSI_CREATE("RSI_MIN.rsi",CONTID,TRUE)
+    IF (ret <> RSIOK) THEN
+      HALT
+    ENDIF
+
+    ret = RSI_ON(#RELATIVE)
+    IF (ret <> RSIOK) THEN
+      HALT
+    ENDIF
+
+    RSI_MOVECORR()
+
+    ret = RSI_OFF()
+
+END

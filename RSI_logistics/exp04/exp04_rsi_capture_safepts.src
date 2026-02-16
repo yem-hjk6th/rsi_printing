@@ -1,0 +1,85 @@
+DEF exp04_rsi_capture_safepts ( )
+
+; ===== Declarations =====
+DECL INT ret
+DECL INT CONTID
+DECL INT i
+
+; ===== INI =====
+BAS (#INITMOV,0 )
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$ADVANCE = 1
+$VEL.CP = 0.10
+$APO.CDIS = 2.0
+
+; ===== Start / Home =====
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+; ===== RSI ON =====
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+; ==============================================================
+; Capture points design notes:
+; 1) Keep B ~ 90 to maintain camera facing down if eye-in-hand
+; 2) Use conservative Z and edge-safe XY
+; 3) At each point, wait for stabilization to let laptop capture
+; ============================================================== 
+
+; Point 1 (center high)
+PTP {X 760, Y 20,  Z 520, A 0,   B 90, C 0, E1 0, E2 0, E3 0, E4 0, S 'B110'}
+WAIT SEC 0.80
+
+; Point 2 (center low)
+LIN {X 760, Y 20,  Z 430, A 0,   B 90, C 0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 3 (left)
+LIN {X 700, Y 220, Z 450, A -25, B 82, C -20, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 4 (right)
+LIN {X 700, Y -220,Z 450, A 25,  B 82, C 20, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 5 (front)
+LIN {X 860, Y 40,  Z 440, A -10, B 75, C 0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 6 (back)
+LIN {X 640, Y 40,  Z 470, A 10,  B 78, C 0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 7 (diag-1)
+LIN {X 820, Y 180, Z 430, A -30, B 72, C -25, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Point 8 (diag-2)
+LIN {X 820, Y -180,Z 430, A 30,  B 72, C 25, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.80
+
+; Return center
+LIN {X 760, Y 20,  Z 500, A 0, B 90, C 0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 0.50
+
+; ===== RSI OFF =====
+ret = RSI_OFF()
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+END

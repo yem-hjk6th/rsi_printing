@@ -1,0 +1,40 @@
+DEF exp01_two_point_motion()
+    
+    DECL INT ret
+    DECL INT CONTID
+    DECL INT i
+    DECL POS point_a, point_b
+
+    BAS (#INITMOV, 0)
+    BAS(#TOOL, 0)
+    BAS(#BASE, 0)
+    BAS(#VEL_PTP, 50)
+    BAS(#VEL_CP, 0.2)
+
+    PTP $POS_ACT
+
+    point_a = $POS_ACT
+    point_a.Z = point_a.Z + 100.0
+
+    point_b = $POS_ACT
+    point_b.Z = point_b.Z - 100.0
+
+    ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+
+    ret = RSI_ON(#RELATIVE)
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+
+    FOR i = 1 TO 5
+        LIN point_a
+        LIN point_b
+    ENDFOR
+
+    ret = RSI_OFF()
+    PTP $POS_ACT
+
+END

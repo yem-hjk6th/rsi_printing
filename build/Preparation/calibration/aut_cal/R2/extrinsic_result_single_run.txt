@@ -1,0 +1,35 @@
+csv=C:\Users\dell\Desktop\RSI\build\Preparation\calibration\aut_cal\R2\sync_robot_aruco.csv
+marker_id=0
+method=Andreff
+pairs_used=33
+rows_used(0-based)=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+
+R_cam2gripper:
+[[-0.84688684 -0.52547063  0.08162905]
+ [-0.51260494  0.8475271   0.13760082]
+ [-0.14148802  0.07468886 -0.98711839]]
+
+t_cam2gripper_m:
+[-0.14404864 -0.66431419  0.79039888]
+
+T_cam2gripper:
+[[-0.84688684 -0.52547063  0.08162905 -0.14404864]
+ [-0.51260494  0.8475271   0.13760082 -0.66431419]
+ [-0.14148802  0.07468886 -0.98711839  0.79039888]
+ [ 0.          0.          0.          1.        ]]
+
+BackSubstitution:
+t_err_mm_mean=391.6290062300541
+t_err_mm_max=840.1033235616113
+ang_err_deg_mean=55.06559832456983
+ang_err_deg_max=75.55517369289193
+pass_check=False
+threshold_trans_mm=20.0
+threshold_ang_deg=3.0
+
+MethodCandidates(sorted):
+Andreff: score=942.285, t_mean=391.629mm, ang_mean=55.066deg
+Daniilidis: score=945.027, t_mean=361.147mm, ang_mean=58.388deg
+Tsai: score=956.244, t_mean=403.628mm, ang_mean=55.262deg
+Park: score=1023.673, t_mean=472.956mm, ang_mean=55.072deg
+Horaud: score=1023.691, t_mean=472.994mm, ang_mean=55.070deg
