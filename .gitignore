@@ -1,0 +1,32 @@
+# Exclude WorkVisual-related content
+work_visual/
+**/work_visual/
+**/WorkVisual/
+**/*workvisual*/
+RSI_visual/RSIVisual/
+**/RSIVisual/
+
+# Common generated/binary artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.svo2
+*.svo
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.tif
+*.tiff
+*.3dm
+*.3dmbak
+*.3dmbk
+*.stl
+*.msi
+*.exe
+*.zip
+*.npy
+*.npz

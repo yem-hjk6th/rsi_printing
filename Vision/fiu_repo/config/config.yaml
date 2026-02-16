@@ -1,0 +1,9 @@
+svo_path: "videos_zed/video_1.svo2"
+timestamp: "2025102713401000"
+limit_frames: 800
+length: 16 # mm
+speed: 32 # mm/s
+x0: 550
+y0: 200
+p1: [0, 75]
+p2: [300, 75]
