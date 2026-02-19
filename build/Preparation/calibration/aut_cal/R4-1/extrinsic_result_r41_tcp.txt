@@ -1,0 +1,41 @@
+csv=C:\Users\dell\Desktop\RSI\build\Preparation\calibration\aut_cal\R4\sync_robot_aruco.csv
+marker_id=0
+pose_assumption=tcp
+pairs_used=62
+rows_used(0-based)=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
+tool_flange_to_tcp(mm,deg)=(225.55,-0.6,72.83,0.0,0.0,0.0)
+
+method=Tsai
+T_cam2gripper:
+[[ 0.83725596 -0.26851891  0.47634026 -1.14367133]
+ [ 0.4039779   0.89083254 -0.20789239 -1.94544248]
+ [-0.36851637  0.36649008  0.85433056  1.8605626 ]
+ [ 0.          0.          0.          1.        ]]
+
+T_gripper2cam:
+[[ 0.83725596  0.4039779  -0.36851637  2.42910917]
+ [-0.26851891  0.89083254  0.36649008  0.74408833]
+ [ 0.47634026 -0.20789239  0.85433056 -1.44920149]
+ [ 0.          0.          0.          1.        ]]
+
+BackSubstitution(new):
+t_err_mm_mean=1047.6829786514627
+t_err_mm_max=1561.307525458149
+ang_err_deg_mean=48.70219892129138
+ang_err_deg_max=82.3019748800386
+
+BackSubstitution(existing_R4_npz):
+t_err_mm_mean=1045.0363849056023
+t_err_mm_max=1565.2215209523388
+ang_err_deg_mean=48.6452262088557
+ang_err_deg_max=81.5507116422714
+
+MethodCandidates(sorted):
+Tsai: score=1534.705, t_mean=1047.683mm, ang_mean=48.702deg
+Andreff: score=1555.009, t_mean=1089.658mm, ang_mean=46.535deg
+Horaud: score=1561.307, t_mean=1084.894mm, ang_mean=47.641deg
+Park: score=1580.105, t_mean=1100.955mm, ang_mean=47.915deg
+Daniilidis: score=1696.044, t_mean=1213.271mm, ang_mean=48.277deg
+
+AssumptionCandidates(sorted):
+tcp: score=1534.705, method=Tsai, pairs=62, t_mean=1047.683mm, ang_mean=48.702deg

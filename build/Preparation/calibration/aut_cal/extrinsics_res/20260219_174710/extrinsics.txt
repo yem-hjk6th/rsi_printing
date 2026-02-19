@@ -1,0 +1,9 @@
+# Camera-to-Gripper Extrinsics (T_cam2gripper)
+# Format: 4x4 row-major, unit: meter
+# Date: 2026-02-19 17:47:10
+# Source: R5/sync_robot_aruco_2.csv, 19 poses, Horaud method
+
+0.066052 0.823625 0.563276 -0.322889
+0.997690 -0.063505 -0.024136 -0.066070
+0.015892 0.563569 -0.825916 0.419890
+0.000000 0.000000 0.000000 1.000000
