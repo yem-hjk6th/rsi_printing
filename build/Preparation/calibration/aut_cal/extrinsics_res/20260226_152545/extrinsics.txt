@@ -1,0 +1,11 @@
+# Camera-to-Gripper Extrinsics (T_cam2gripper)
+# Format: 4x4 row-major, unit: meter
+# Date: 2026-02-26 15:25:45
+# Source: R7/sync_robot_aruco.csv, 31 poses (28 after outlier removal), Daniilidis method
+# Changes vs R6: Sub-pixel corner refinement enabled (CORNER_REFINE_SUBPIX)
+# Result: WORSE than R6 — sub-pixel refinement degraded accuracy on printed markers
+
+0.062409 0.818791 0.570689 -0.274688
+0.996278 -0.085173 0.013251 -0.067454
+0.059457 0.567738 -0.821059 0.410830
+0.000000 0.000000 0.000000 1.000000

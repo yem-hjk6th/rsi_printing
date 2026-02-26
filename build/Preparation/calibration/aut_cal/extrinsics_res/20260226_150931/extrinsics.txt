@@ -1,0 +1,11 @@
+# Camera-to-Gripper Extrinsics (T_cam2gripper)
+# Format: 4x4 row-major, unit: meter
+# Date: 2026-02-26 15:09:31
+# Source: R6/sync_robot_aruco.csv, 31 poses (23 after outlier removal), Daniilidis method
+# Changes vs R5: HD1080 (was HD720), 100mm marker ID1 (was 50mm ID0), SVD orthogonalization
+# No sub-pixel refinement in this capture
+
+0.047495 0.811369 0.582601 -0.306804
+0.998643 -0.051054 -0.010310 -0.077421
+0.021379 0.582300 -0.812693 0.388133
+0.000000 0.000000 0.000000 1.000000

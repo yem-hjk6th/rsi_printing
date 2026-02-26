@@ -21,7 +21,7 @@ class DemoConfig:
     PIXEL_2 = (720, 408)
 
     DEPTH_PATCH_RADIUS = 1
-    PRINT_EVERY_SEC = 0.3
+    PRINT_EVERY_SEC = 1.0
     WINDOW_NAME = "ZED Two-Pixel Distance Demo"
 
     EXTRINSICS_PATH = Path("../../Preparation/calibration/aut_cal/extrinsics_res/20260219_174710/extrinsics.txt")

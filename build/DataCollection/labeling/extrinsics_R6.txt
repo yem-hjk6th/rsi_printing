@@ -1,0 +1,12 @@
+# Camera-to-Gripper Extrinsics (T_cam2gripper)
+# Source: R6 — Best calibration result (2.884 mm mean error, 9/10 quality)
+# Format: 4x4 row-major, unit: meter
+# Date: 2026-02-26 15:09:31
+# Config: HD1080, 100mm ArUco ID1, no sub-pixel, Daniilidis method
+# Poses: 31 raw → 23 after outlier removal
+# Folder: extrinsics_res/20260226_150931/
+
+0.047495 0.811369 0.582601 -0.306804
+0.998643 -0.051054 -0.010310 -0.077421
+0.021379 0.582300 -0.812693 0.388133
+0.000000 0.000000 0.000000 1.000000

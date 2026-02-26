@@ -1,0 +1,11 @@
+# Camera-to-Gripper Extrinsics (T_cam2gripper)
+# Format: 4x4 row-major, unit: meter
+# Date: 2026-02-26 15:44:35
+# Source: R8/sync_robot_aruco.csv, 26 poses (22 after outlier removal), Horaud method
+# Changes vs R6: ArUco marker moved closer to robot foot (~1.2m distance vs ~1.1m)
+# Same: HD1080, 100mm marker ID1, no sub-pixel refinement
+
+0.051043 0.811765 0.581750 -0.306365
+0.998394 -0.055813 -0.009719 -0.065257
+0.024580 0.581311 -0.813310 0.380557
+0.000000 0.000000 0.000000 1.000000

@@ -1,0 +1,195 @@
+DEF cal( )
+
+DECL INT ret
+DECL INT CONTID
+
+BAS (#INITMOV,0 )
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$ADVANCE = 1
+$VEL.CP = 0.05
+$APO.CDIS = 2.0
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+; ================================================================
+; R9: Maximise pose diversity for hand-eye calibration
+; Strategy:
+;   - B 65-90 normal, B 72-85 flipped (A~170,C~170) = proven detection
+;   - More intermediate A/C angles (not just 0/10/170)
+;   - Wider XYZ spread, more grid points
+;   - ~35 poses, expect 25-30+ ArUco detections
+;   - Removed B>90 normal poses (never detected in R5-R8)
+; ================================================================
+
+; ====== Group 1: Center rotation sweep (850, 40, 460) ======
+; P01 neutral
+LIN {X 850, Y  40, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0, S 'B110'}
+WAIT SEC 3.00
+
+; P02 mild B tilt
+LIN {X 850, Y  40, Z 460, A   5, B  75, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P03 opposite mild
+LIN {X 850, Y  40, Z 460, A  -5, B  85, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P04 A-dominant
+LIN {X 850, Y  40, Z 460, A  18, B  78, C  10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P05 C-dominant
+LIN {X 850, Y  40, Z 460, A   8, B  82, C  18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P06 larger A+C combination
+LIN {X 850, Y  40, Z 460, A  25, B  72, C -12, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P07 negative A combination
+LIN {X 850, Y  40, Z 460, A -15, B  80, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P08 flipped orientation
+LIN {X 850, Y  40, Z 460, A 172, B  82, C 162, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P09 flipped variant
+LIN {X 850, Y  40, Z 460, A-170, B  78, C-168, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P10 flipped + different B
+LIN {X 850, Y  40, Z 460, A 160, B  85, C 165, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Group 2: Z variation at center ======
+; P11 low Z, steep tilt
+LIN {X 850, Y  40, Z 440, A  10, B  88, C   5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P12 high Z, aggressive B
+LIN {X 850, Y  40, Z 480, A   8, B  65, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P13 mid-high
+LIN {X 850, Y  40, Z 470, A  15, B  70, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P14 mid-high with C
+LIN {X 850, Y  40, Z 470, A  10, B  74, C  15, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P15 try B=62 (push boundary)
+LIN {X 850, Y  40, Z 490, A   5, B  62, C  -5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Group 3: Forward positions (X=900-920) ======
+; P16 far right, flipped
+LIN {X 920, Y 140, Z 440, A 168, B  85, C 172, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P17 far left, normal
+LIN {X 920, Y-140, Z 440, A  12, B  82, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P18 center-forward, larger A
+LIN {X 920, Y   0, Z 440, A  20, B  86, C  18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P19 mid-right, flipped
+LIN {X 920, Y  70, Z 440, A 155, B  88, C 158, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P20 far left, flipped
+LIN {X 920, Y -80, Z 440, A 165, B  84, C 170, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Group 4: Backward positions (X=760-800) ======
+; P21 back-right, normal
+LIN {X 780, Y 120, Z 450, A  10, B  72, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P22 back-left, flipped
+LIN {X 780, Y-120, Z 450, A 170, B  73, C 173, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P23 back-center, medium rotation
+LIN {X 780, Y   0, Z 450, A  22, B  78, C  20, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P24 far back
+LIN {X 760, Y  40, Z 470, A  -8, B  68, C   5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P25 back-right, flipped
+LIN {X 780, Y  60, Z 455, A-165, B  76, C-170, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Group 5: Mid-range positions + diagonals ======
+; P26 forward-mid, flipped
+LIN {X 900, Y  40, Z 430, A-172, B  75, C 175, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P27 diagonal NE
+LIN {X 870, Y -60, Z 440, A 175, B  74, C 174, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P28 diagonal mid
+LIN {X 830, Y  80, Z 450, A   8, B  76, C  -5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P29 diagonal SW
+LIN {X 800, Y -80, Z 455, A  15, B  78, C  10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P30 high diagonal, flipped
+LIN {X 860, Y 100, Z 445, A 165, B  80, C 168, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P31 forward-low, medium A
+LIN {X 880, Y-100, Z 435, A  30, B  84, C  25, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P32 center-low
+LIN {X 840, Y  60, Z 465, A -12, B  70, C -10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P33 extreme Y-right, normal
+LIN {X 810, Y -40, Z 460, A  35, B  82, C  28, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P34 forward-right, very different angle
+LIN {X 890, Y 120, Z 440, A-155, B  78, C-160, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P35 center, low B push
+LIN {X 850, Y  40, Z 485, A  12, B  63, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Return to neutral ======
+LIN {X 850, Y  40, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 1.00
+
+ret = RSI_OFF()
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+END
