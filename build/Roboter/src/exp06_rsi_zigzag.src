@@ -1,0 +1,100 @@
+DEF RSI_ML ( )
+
+;VARIABLE DECLARATIONS
+DECL INT ret
+DECL INT CONTID
+DECL INT I
+DECL INT NUM_LINES
+DECL REAL X_CUR
+DECL REAL FX
+DECL REAL LAYER_H
+DECL E6POS TARGET
+DECL BOOL DIR_FWD
+
+;FOLD INI
+BAS (#INITMOV,0 )
+;BASE IS 0, TOOL IS 3, FIXED START POS
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$VEL.CP=0.2
+$ADVANCE=3
+;ENDFOLD (INI)
+
+PTP  {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+;EXTRUDER RPM
+PelletExtruderRPM = 150
+
+;RSI INI
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+    HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+    HALT
+ENDIF
+
+;ZIGZAG PARAMETERS
+;X range: 900 -> 550, step 10mm => 36 long lines
+;Y range: 315 <-> -285 (600mm each line)
+;Base Z: (900,315)=20, (900,-285)=18, (550,-285)=15, (550,315)=16
+;Layer height 0.7mm (nozzle 1.5mm)
+LAYER_H = 0.7
+NUM_LINES = 36
+X_CUR = 900
+DIR_FWD = TRUE
+TARGET = {X 900, Y 315, Z 20.7, A 0, B 90, C -0, E1 0, E2 0, E3 0, E4 0}
+
+;MAIN - approach start point
+PTP {X 900, Y 315, Z 60, A 0, B 90, C -0, E1 0, E2 0, E3 0, E4 0, S 'B110'} C_PTP
+LIN {X 900, Y 315, Z 25, A 0, B 90, C -0, E1 0, E2 0, E3 0, E4 0}
+$VEL.CP=0.01
+LIN {X 900, Y 315, Z 20.7, A 0, B 90, C -0, E1 0, E2 0, E3 0, E4 0} C_DIS
+
+;ZIGZAG: parallel lines along Y, stepping X by -10mm
+;Z interpolated from 4 corner base heights + LAYER_H
+FOR I = 1 TO NUM_LINES
+
+    TARGET.X = X_CUR
+    IF (DIR_FWD) THEN
+        TARGET.Y = -285
+    ELSE
+        TARGET.Y = 315
+    ENDIF
+    ;Interpolate base Z along X, then add layer height
+    FX = (TARGET.X - 550.0) / 350.0
+    IF (TARGET.Y > 0) THEN
+        ;Y=315 side: base 16 @ X550, base 20 @ X900
+        TARGET.Z = 16.0 + FX * 4.0 + LAYER_H
+    ELSE
+        ;Y=-285 side: base 15 @ X550, base 18 @ X900
+        TARGET.Z = 15.0 + FX * 3.0 + LAYER_H
+    ENDIF
+    LIN TARGET C_DIS
+    DIR_FWD = NOT DIR_FWD
+
+    ;10mm step to next line (skip after last)
+    IF (I < NUM_LINES) THEN
+        X_CUR = X_CUR - 10
+        TARGET.X = X_CUR
+        ;Recompute Z for new X at same Y
+        FX = (TARGET.X - 550.0) / 350.0
+        IF (TARGET.Y > 0) THEN
+            TARGET.Z = 16.0 + FX * 4.0 + LAYER_H
+        ELSE
+            TARGET.Z = 15.0 + FX * 3.0 + LAYER_H
+        ENDIF
+        LIN TARGET C_DIS
+    ENDIF
+
+ENDFOR
+
+ret = RSI_OFF()
+
+END
