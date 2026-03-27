@@ -1,6 +1,9 @@
 """
-ori_recorder_svo_csv.py — RSI listener + ZED SVO2 recorder + CSV logger
-Output: recorded_data/<ts>/recording_<ts>.svo2 + rsi_data/rsi_data_<ts>.csv
+init_recorder_svo_csv.py — RSI-triggered ZED SVO2 recorder + CSV logger
+Auto-starts recording when RSI communication is detected,
+auto-stops when RSI communication is lost.
+Output: rsi_printing/recorded_data/<date>/recording_<ts>.svo2
+        rsi_printing/rsi_data/rsi_data_<ts>.csv
 """
 
 import csv
@@ -11,6 +14,16 @@ import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+# ZED SDK DLL paths (must be added before importing pyzed)
+if os.name == "nt":
+    for p in [
+        r"C:\Program Files (x86)\ZED SDK\bin",
+        r"C:\Program Files (x86)\ZED SDK\dependencies\bin",
+        r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\bin",
+    ]:
+        if os.path.isdir(p):
+            os.add_dll_directory(p)
+
 import cv2
 import pyzed.sl as sl
 
@@ -19,17 +32,22 @@ import pyzed.sl as sl
 RSI_HOST = "0.0.0.0"
 RSI_PORT = 59152
 
-ZED_RESOLUTION = sl.RESOLUTION.HD2K      # 2208x1242 — sensor max 15fps
+ZED_RESOLUTION = sl.RESOLUTION.HD2K
 ZED_FPS = 15
-ZED_DEPTH_MODE = sl.DEPTH_MODE.NEURAL    # RTX 5070 Ti can handle NEURAL at HD2K 15fps
+ZED_DEPTH_MODE = sl.DEPTH_MODE.NEURAL
 ZED_CODEC = sl.SVO_COMPRESSION_MODE.H264
 
 CSV_LOG_HZ = 15
 CSV_FLUSH_EVERY = 100
 
-WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-SVO_OUTPUT_DIR = os.path.join(WORKSPACE_ROOT, "recorded_data")
-CSV_OUTPUT_DIR = os.path.join(WORKSPACE_ROOT, "rsi_data")
+# RSI disconnect timeout: if no packet received for this many seconds, consider RSI disconnected
+RSI_DISCONNECT_TIMEOUT = 2.0
+
+# ─── Output paths: rsi_printing/recorded_data/ and rsi_printing/rsi_data/ ─────
+# Navigate from this file up to rsi_printing root
+RSI_PRINTING_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+SVO_OUTPUT_DIR = os.path.join(RSI_PRINTING_ROOT, "recorded_data")
+CSV_OUTPUT_DIR = os.path.join(RSI_PRINTING_ROOT, "rsi_data")
 
 # ─── RSI ──────────────────────────────────────────────────────────────────────
 
@@ -68,6 +86,7 @@ class RSIThread(threading.Thread):
         self.running = True
         self.connected = False
         self.packet_count = 0
+        self.last_packet_time = 0.0
 
     def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -80,6 +99,7 @@ class RSIThread(threading.Thread):
             try:
                 data, addr = sock.recvfrom(2048)
                 self.packet_count += 1
+                self.last_packet_time = time.time()
                 pose = parse_rsi_xml(data)
                 if pose:
                     with self.lock:
@@ -98,6 +118,12 @@ class RSIThread(threading.Thread):
         with self.lock:
             return self.latest.copy() if self.latest else None
 
+    def is_alive_rsi(self):
+        """Return True if RSI packets were received recently."""
+        if self.last_packet_time == 0.0:
+            return False
+        return (time.time() - self.last_packet_time) < RSI_DISCONNECT_TIMEOUT
+
     def stop(self):
         self.running = False
 
@@ -105,6 +131,11 @@ class RSIThread(threading.Thread):
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
+    # Verify output paths
+    print(f"[PATH] SVO output dir: {SVO_OUTPUT_DIR}")
+    print(f"[PATH] CSV output dir: {CSV_OUTPUT_DIR}")
+    assert "rsi_printing" in SVO_OUTPUT_DIR, f"SVO path not under rsi_printing: {SVO_OUTPUT_DIR}"
+
     zed = sl.Camera()
     init_p = sl.InitParameters()
     init_p.camera_resolution = ZED_RESOLUTION
@@ -119,26 +150,32 @@ def main():
 
     image = sl.Mat()
     runtime = sl.RuntimeParameters()
-    print("[PREVIEW] press 's' to start, 'q' to quit")
+
+    # ─── Phase 1: Wait for RSI connection ─────────────────────────────────
+    print("[WAIT] Waiting for RSI communication to start recording...")
     while True:
         if zed.grab(runtime) == sl.ERROR_CODE.SUCCESS:
             zed.retrieve_image(image, sl.VIEW.LEFT)
             frame = image.get_data()
             if frame.shape[2] == 4:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-            cv2.putText(frame, "PREVIEW — press 's' to start", (10, 30),
+            cv2.putText(frame, "WAITING for RSI connection...", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.imshow("RSI + ZED Recorder", frame)
+
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('s'):
-            break
-        elif key == ord('q'):
+        if key == ord('q'):
             rsi.stop()
             zed.close()
             cv2.destroyAllWindows()
             print("[EXIT] Cancelled by user.")
             return
 
+        if rsi.connected and rsi.is_alive_rsi():
+            print("[RSI] Communication detected — starting recording.")
+            break
+
+    # ─── Phase 2: Start recording ─────────────────────────────────────────
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     svo_dir = os.path.join(SVO_OUTPUT_DIR, ts)
     os.makedirs(svo_dir, exist_ok=True)
@@ -168,7 +205,7 @@ def main():
     last_csv_t = 0.0
     csv_interval = 1.0 / CSV_LOG_HZ
 
-    print(f"\n[RUN] Recording started. Press 'q' to stop.\n")
+    print(f"\n[RUN] Recording started (auto-stops when RSI disconnects).\n")
     print(f"{'Time':>7}  {'Frames':>6}  {'CSV':>5}  {'RSI':>7}  {'Robot XYZ':>30}")
     print("-" * 70)
 
@@ -213,7 +250,13 @@ def main():
                       f"{rsi.packet_count:7d}  "
                       f"({pose['x']:8.1f}, {pose['y']:8.1f}, {pose['z']:8.1f})")
 
+            # Auto-stop: RSI communication lost
+            if not rsi.is_alive_rsi():
+                print(f"\n[RSI] Communication lost — stopping recording.")
+                break
+
             if cv2.waitKey(1) & 0xFF == ord("q"):
+                print(f"\n[USER] Manual stop requested.")
                 break
 
     except KeyboardInterrupt:

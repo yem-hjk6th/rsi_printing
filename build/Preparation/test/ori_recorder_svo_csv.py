@@ -11,6 +11,16 @@ import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+# ZED SDK DLL paths (must be added before importing pyzed)
+if os.name == "nt":
+    for p in [
+        r"C:\Program Files (x86)\ZED SDK\bin",
+        r"C:\Program Files (x86)\ZED SDK\dependencies\bin",
+        r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\bin",
+    ]:
+        if os.path.isdir(p):
+            os.add_dll_directory(p)
+
 import cv2
 import pyzed.sl as sl
 

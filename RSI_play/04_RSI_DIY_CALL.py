@@ -19,7 +19,9 @@ class RSIServer:
         self.packet_count = 0
         self.start_time = None
         self.send_config = {}  # 存储 SEND 配置
-        self.config_path = config_path or r"c:\Users\dell\Desktop\RSI\RSI_set_ver\Mine\ver5_10mm_var\RSI_EthernetConfig.xml"
+        self.config_path = config_path or os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..",
+            "RSI_set_ver", "Mine", "ver5_10mm_var", "RSI_EthernetConfig.xml")
         self.verbose = verbose  # 是否打印原始 XML
         self.save_xml = save_xml  # 是否保存 XML 到文件
         self.xml_file = None
