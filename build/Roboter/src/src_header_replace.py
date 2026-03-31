@@ -12,13 +12,13 @@ import os
 # ============================================================
 
 # Input .src file path (PRC-generated)
-INPUT_SRC = r"C:\Users\888y9\Desktop\rsi_printing\build\Roboter\src\Ye_RSI_t3.src"
+INPUT_SRC = r"C:\Users\888y9\Desktop\Models\src_output\Ye_RSI_t5.src"
 
 # Output path (None = auto-generate _fixed.src in same dir)
 OUTPUT_SRC = None
 
 # Program name (must match KRL DEF name and filename)
-PROG_NAME = "Ye_RSI_t3"
+PROG_NAME = "Ye_RSI_t5"
 
 # Extruder RPM
 EXTRUDER_RPM = 400

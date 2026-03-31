@@ -2,11 +2,14 @@
 init_recorder_svo_csv.py — RSI-triggered ZED SVO2 recorder + CSV logger
 Auto-starts recording when RSI communication is detected,
 auto-stops when RSI communication is lost.
-Output: rsi_printing/recorded_data/<date>/recording_<ts>.svo2
-        rsi_printing/rsi_data/rsi_data_<ts>.csv
+SVO2 is split into segments every SEGMENT_MINUTES to avoid large file corruption.
+Output: rsi_printing/recorded_data/<session_ts>/recording_<session_ts>_<idx>_<end_ts>.svo2
+        rsi_printing/rsi_data/rsi_data_<session_ts>.csv
 """
 
 import csv
+import ctypes
+import json
 import os
 import socket
 import threading
@@ -25,7 +28,28 @@ if os.name == "nt":
             os.add_dll_directory(p)
 
 import cv2
+import numpy as np
 import pyzed.sl as sl
+
+# ─── Windows power management: prevent sleep & screen lock during recording ───
+
+# SetThreadExecutionState flags
+ES_CONTINUOUS       = 0x80000000
+ES_SYSTEM_REQUIRED  = 0x00000001
+ES_DISPLAY_REQUIRED = 0x00000002
+
+def prevent_sleep():
+    """Prevent Windows from sleeping or turning off display."""
+    if os.name == "nt":
+        ctypes.windll.kernel32.SetThreadExecutionState(
+            ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+        print("[PWR] Screen lock & sleep prevention ENABLED")
+
+def allow_sleep():
+    """Re-allow normal Windows sleep/display behavior."""
+    if os.name == "nt":
+        ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+        print("[PWR] Screen lock & sleep prevention DISABLED")
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -39,6 +63,9 @@ ZED_CODEC = sl.SVO_COMPRESSION_MODE.H264
 
 CSV_LOG_HZ = 15
 CSV_FLUSH_EVERY = 100
+
+# SVO2 segment duration in minutes — file is split to avoid large-file corruption
+SEGMENT_MINUTES = 15
 
 # RSI disconnect timeout: if no packet received for this many seconds, consider RSI disconnected
 RSI_DISCONNECT_TIMEOUT = 2.0
@@ -176,42 +203,96 @@ def main():
             break
 
     # ─── Phase 2: Start recording ─────────────────────────────────────────
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    svo_dir = os.path.join(SVO_OUTPUT_DIR, ts)
+    session_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    svo_dir = os.path.join(SVO_OUTPUT_DIR, session_ts)
     os.makedirs(svo_dir, exist_ok=True)
     os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
 
-    svo_path = os.path.join(svo_dir, f"recording_{ts}.svo2")
-    csv_path = os.path.join(CSV_OUTPUT_DIR, f"rsi_data_{ts}.csv")
+    segment_idx = 1
+    segment_duration = SEGMENT_MINUTES * 60
 
-    rec_p = sl.RecordingParameters()
-    rec_p.compression_mode = ZED_CODEC
-    rec_p.video_filename = svo_path
-    err = zed.enable_recording(rec_p)
-    if err != sl.ERROR_CODE.SUCCESS:
-        zed.close()
-        raise RuntimeError(f"ZED recording failed: {err}")
-    print(f"[ZED] Recording → {svo_path}")
+    def start_segment(idx):
+        """Enable SVO2 recording for a new segment, return (path, start_time)."""
+        seg_start_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        svo_path = os.path.join(svo_dir,
+                                f"recording_{session_ts}_{idx:03d}_{seg_start_ts}.svo2")
+        rec_p = sl.RecordingParameters()
+        rec_p.compression_mode = ZED_CODEC
+        rec_p.video_filename = svo_path
+        err = zed.enable_recording(rec_p)
+        if err != sl.ERROR_CODE.SUCCESS:
+            raise RuntimeError(f"ZED recording failed: {err}")
+        print(f"[ZED] Segment {idx} → {svo_path}")
+        return svo_path, time.time()
 
+    svo_path, segment_start = start_segment(segment_idx)
+
+    # ─── Save session metadata (precise epoch + intrinsics + baseline) ─────
+    cam_info = zed.get_camera_information()
+    cam_config = cam_info.camera_configuration
+    cal_params = cam_config.calibration_parameters
+    left_cam = cal_params.left_cam
+    baseline_mm = abs(cal_params.get_camera_baseline())
+
+    recording_start_epoch = time.time()
+    session_meta = {
+        "session_ts": session_ts,
+        "recording_start_epoch": recording_start_epoch,
+        "resolution": [cam_config.resolution.width, cam_config.resolution.height],
+        "fps": int(cam_config.fps),
+        "intrinsics": {
+            "fx": left_cam.fx, "fy": left_cam.fy,
+            "cx": left_cam.cx, "cy": left_cam.cy,
+            "disto": list(left_cam.disto[:5]),
+        },
+        "baseline_m": baseline_mm / 1000.0,
+        "depth_mode": str(ZED_DEPTH_MODE),
+        "serial_number": cam_info.serial_number,
+    }
+    meta_path = os.path.join(svo_dir, "session_meta.json")
+    with open(meta_path, "w") as f:
+        json.dump(session_meta, f, indent=2)
+    print(f"[META] Session metadata → {meta_path}")
+    print(f"[META] Start epoch: {recording_start_epoch:.6f}")
+    print(f"[META] K: fx={left_cam.fx:.1f} fy={left_cam.fy:.1f} "
+          f"cx={left_cam.cx:.1f} cy={left_cam.cy:.1f} baseline={baseline_mm/1000:.4f}m")
+
+    # Also save K.txt for direct FFS consumption
+    k_path = os.path.join(svo_dir, "K.txt")
+    with open(k_path, "w") as f:
+        f.write(f"{left_cam.fx} 0.0 {left_cam.cx} 0.0 {left_cam.fy} {left_cam.cy} 0.0 0.0 1.0\n")
+        f.write(f"{baseline_mm / 1000.0}\n")
+
+    csv_path = os.path.join(CSV_OUTPUT_DIR, f"rsi_data_{session_ts}.csv")
     csv_file = open(csv_path, "w", newline="")
     writer = csv.writer(csv_file)
     writer.writerow(["timestamp", "ipoc", "x_mm", "y_mm", "z_mm",
-                      "a_deg", "b_deg", "c_deg", "override", "vel"])
+                      "a_deg", "b_deg", "c_deg", "override", "vel",
+                      "svo_frame_idx", "zed_timestamp_ns"])
     print(f"[CSV] Logging → {csv_path}")
+
+    # Prevent Windows from sleeping or locking the screen during recording
+    prevent_sleep()
 
     frame_count = 0
     csv_rows = 0
+    grab_fail_count = 0
     start = time.time()
     last_csv_t = 0.0
     csv_interval = 1.0 / CSV_LOG_HZ
 
-    print(f"\n[RUN] Recording started (auto-stops when RSI disconnects).\n")
-    print(f"{'Time':>7}  {'Frames':>6}  {'CSV':>5}  {'RSI':>7}  {'Robot XYZ':>30}")
-    print("-" * 70)
+    print(f"\n[RUN] Recording started (segment every {SEGMENT_MINUTES} min, "
+          f"auto-stops when RSI disconnects).\n")
+    print(f"{'Time':>7}  {'Frames':>6}  {'CSV':>5}  {'RSI':>7}  {'Seg':>3}  {'Robot XYZ':>30}")
+    print("-" * 75)
 
     try:
         while True:
-            if zed.grab(runtime) != sl.ERROR_CODE.SUCCESS:
+            grab_status = zed.grab(runtime)
+            if grab_status != sl.ERROR_CODE.SUCCESS:
+                grab_fail_count += 1
+                if grab_fail_count % 100 == 1:
+                    print(f"[WARN] zed.grab() failed: {grab_status} (total fails: {grab_fail_count})")
                 continue
 
             frame_count += 1
@@ -226,6 +307,9 @@ def main():
                         (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
             pose = rsi.get_latest()
+            # Get ZED frame timestamp (nanoseconds since epoch)
+            zed_ts_ns = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_nanoseconds()
+
             if pose:
                 cv2.putText(frame, f"RSI: ({pose['x']:.1f}, {pose['y']:.1f}, {pose['z']:.1f})",
                             (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
@@ -234,7 +318,8 @@ def main():
                     writer.writerow([f"{now:.6f}", pose["ipoc"],
                                      f"{pose['x']:.2f}", f"{pose['y']:.2f}", f"{pose['z']:.2f}",
                                      f"{pose['a']:.2f}", f"{pose['b']:.2f}", f"{pose['c']:.2f}",
-                                     pose["override"], pose["vel"]])
+                                     pose["override"], pose["vel"],
+                                     frame_count, zed_ts_ns])
                     csv_rows += 1
                     last_csv_t = now
                     if csv_rows % CSV_FLUSH_EVERY == 0:
@@ -245,9 +330,15 @@ def main():
 
             cv2.imshow("RSI + ZED Recorder", frame)
 
+            # ─── Segment rotation ─────────────────────────────────────
+            if now - segment_start >= segment_duration:
+                zed.disable_recording()
+                segment_idx += 1
+                svo_path, segment_start = start_segment(segment_idx)
+
             if frame_count % ZED_FPS == 0 and pose:
                 print(f"{elapsed:6.1f}s  {frame_count:6d}  {csv_rows:5d}  "
-                      f"{rsi.packet_count:7d}  "
+                      f"{rsi.packet_count:7d}  {segment_idx:3d}  "
                       f"({pose['x']:8.1f}, {pose['y']:8.1f}, {pose['z']:8.1f})")
 
             # Auto-stop: RSI communication lost
@@ -263,6 +354,7 @@ def main():
         pass
 
     finally:
+        allow_sleep()
         rsi.stop()
         zed.disable_recording()
         cv2.destroyAllWindows()
@@ -270,11 +362,12 @@ def main():
         csv_file.close()
 
         total = time.time() - start
-        print(f"\n{'=' * 70}")
-        print(f"[DONE] {total:.1f}s | {frame_count} frames | {csv_rows} CSV rows | {rsi.packet_count} RSI packets")
-        print(f"  SVO: {svo_path}")
-        print(f"  CSV: {csv_path}")
-        print(f"{'=' * 70}")
+        print(f"\n{'=' * 75}")
+        print(f"[DONE] {total:.1f}s | {frame_count} frames | {csv_rows} CSV rows | "
+              f"{rsi.packet_count} RSI packets | {segment_idx} segments | {grab_fail_count} grab fails")
+        print(f"  SVO dir: {svo_dir}")
+        print(f"  CSV:     {csv_path}")
+        print(f"{'=' * 75}")
 
 
 if __name__ == "__main__":

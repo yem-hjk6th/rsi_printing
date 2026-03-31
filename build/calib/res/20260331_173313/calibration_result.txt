@@ -1,0 +1,20 @@
+csv = C:\Users\888y9\Desktop\rsi_printing\build\calib\res\20260331_173313\sync_robot_aruco.csv
+csv_format = flat
+method = Park
+poses_used = 7
+poses_raw = 11
+mean_err_mm = 13.604
+max_err_mm = 20.843
+
+T_cam2gripper:
+ 0.063531   0.753416   0.654468  -0.347414
+ 0.997770  -0.034516  -0.057123  -0.028745
+-0.020448   0.656638  -0.753929   0.355964
+ 0.000000   0.000000   0.000000   1.000000
+
+All methods (sorted by mean error):
+  Park         mean=28.653 mm  max=71.183 mm
+  Horaud       mean=28.659 mm  max=71.185 mm
+  Tsai         mean=28.999 mm  max=73.225 mm
+  Daniilidis   mean=31.218 mm  max=68.874 mm
+  Andreff      mean=83.121 mm  max=129.444 mm

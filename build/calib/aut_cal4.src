@@ -1,0 +1,108 @@
+DEF cal( )
+
+DECL INT ret
+DECL INT CONTID
+
+BAS (#INITMOV,0 )
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$ADVANCE = 1
+$VEL.CP = 0.05
+$APO.CDIS = 2.0
+
+PTP {A1 33,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+; aut_cal4: proven aut_cal structure (R5-R8: 3-7mm) shifted to new workspace
+; Offset from old: dX=-90, dY=-450, dZ=0
+; Old center (850, 40, 460) → New center (760, -410, 460)
+; ABC rotations unchanged — these gave best results in R5-R8
+
+; All poses use combined ABC to spread load across A4/A5/A6
+; P01 neutral
+LIN {X 760, Y-410, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0, S 'B110'}
+WAIT SEC 2.50
+
+; P02-P05 B-dominant + small A,C coupling
+LIN {X 760, Y-410, Z 460, A   5, B  75, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 460, A  -5, B 108, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 480, A   8, B  65, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 480, A  -8, B 115, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+; P06-P09 A-dominant but always coupled with B,C offset
+LIN {X 760, Y-410, Z 460, A  18, B  78, C  10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 460, A -18, B 102, C -10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 470, A  15, B  70, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 470, A -15, B 110, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+; P10-P13 C-dominant coupled with A,B offset
+LIN {X 760, Y-410, Z 460, A   8, B  82, C  18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 460, A  -8, B  98, C -18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 470, A  10, B  74, C  15, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 760, Y-410, Z 470, A -10, B 106, C -15, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+; P14-P19 spatial spread + rotation
+LIN {X 830, Y-310, Z 440, A -12, B  95, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 830, Y-590, Z 440, A  12, B  82, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 690, Y-330, Z 450, A  10, B  72, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 690, Y-570, Z 450, A -10, B 108, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 810, Y-410, Z 430, A   8, B 105, C  -5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+LIN {X 670, Y-410, Z 470, A  -8, B  68, C   5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 2.50
+
+; ====== Return to neutral ======
+LIN {X 760, Y-410, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 1.00
+
+ret = RSI_OFF()
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+PTP {A1 33,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+END
