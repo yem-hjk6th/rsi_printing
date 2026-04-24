@@ -1,0 +1,103 @@
+DEF cal( )
+
+DECL INT ret
+DECL INT CONTID
+
+BAS (#INITMOV,0 )
+BAS(#TOOL, 3)
+BAS(#BASE, 0)
+BAS(#VEL_PTP, 10)
+PDAT_ACT.ACC = 50
+PDAT_ACT.APO_DIST = 50
+$BWDSTART = TRUE
+$ADVANCE = 1
+$VEL.CP = 0.05
+$APO.CDIS = 2.0
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+ret = RSI_CREATE("RSI_MIN.rsi", CONTID, TRUE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+ret = RSI_ON(#RELATIVE)
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+; All poses use combined ABC to spread load across A4/A5/A6
+; P01 neutral
+LIN {X 850, Y  40, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0, S 'B110'}
+WAIT SEC 3.00
+
+; P02-P05 B-dominant + small A,C coupling
+LIN {X 850, Y  40, Z 460, A   5, B  75, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 460, A  -5, B 108, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 480, A   8, B  65, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 480, A  -8, B 115, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P06-P09 A-dominant but always coupled with B,C offset
+LIN {X 850, Y  40, Z 460, A  18, B  78, C  10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 460, A -18, B 102, C -10, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 470, A  15, B  70, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 470, A -15, B 110, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P10-P13 C-dominant coupled with A,B offset
+LIN {X 850, Y  40, Z 460, A   8, B  82, C  18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 460, A  -8, B  98, C -18, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 470, A  10, B  74, C  15, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 850, Y  40, Z 470, A -10, B 106, C -15, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; P14-P19 spatial spread + rotation
+LIN {X 920, Y 140, Z 440, A -12, B  95, C  -8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 920, Y-140, Z 440, A  12, B  82, C   8, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 780, Y 120, Z 450, A  10, B  72, C   6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 780, Y-120, Z 450, A -10, B 108, C  -6, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 900, Y  40, Z 430, A   8, B 105, C  -5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+LIN {X 760, Y  40, Z 470, A  -8, B  68, C   5, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 3.00
+
+; ====== Return to neutral ======
+LIN {X 850, Y  40, Z 460, A   0, B  90, C   0, E1 0, E2 0, E3 0, E4 0}
+WAIT SEC 1.00
+
+ret = RSI_OFF()
+IF (ret <> RSIOK) THEN
+  HALT
+ENDIF
+
+PTP {A1 5,A2 -90,A3 100,A4 5,A5 -10,A6 -5,E1 0,E2 0,E3 0,E4 0}
+
+END

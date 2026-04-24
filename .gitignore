@@ -30,3 +30,38 @@ __pycache__/
 *.zip
 *.npy
 *.npz
+
+# 3D mesh / pointcloud data
+*.ply
+*.obj
+*.pcd
+
+# Video files
+*.mp4
+*.mov
+*.MOV
+*.avi
+*.mkv
+
+# Python wheel packages
+*.whl
+
+# Database / binary data
+*.db
+*.db-shm
+*.db-wal
+*.bin
+*.ckpt
+
+# Experiment output folders (demo results, recorded data)
+Vision/vision_demo_test_res/
+recorded_data/
+rsi_data/
+
+# Large model checkpoints and local install packages
+**/sam2_checkpoints/
+sam2_install/
+
+# Agent/IDE workspace config (machine-specific, not project code)
+.claude/
+.vscode/
