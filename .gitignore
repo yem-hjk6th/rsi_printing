@@ -5,6 +5,7 @@ work_visual/
 **/*workvisual*/
 RSI_visual/RSIVisual/
 **/RSIVisual/
+**/rsi_setup/RSI_visual/
 
 # Common generated/binary artifacts
 __pycache__/
@@ -30,3 +31,52 @@ __pycache__/
 *.zip
 *.npy
 *.npz
+
+# Sensor / experiment data outputs (videos, meshes, archives, checkpoints)
+*.ply
+*.obj
+*.mp4
+*.MOV
+*.mov
+*.mkv
+*.bin
+*.pt
+*.ckpt
+*.whl
+*.db
+*.db-wal
+*.db-shm
+*.tar
+*.gz
+*.7z
+
+# Session output trees — data, never source
+recorded_data/
+rsi_data/
+Vision/vision_demo_test_res/
+build/DataCollection/labeling/post_labeling/
+**/ffs_output/
+**/sam2_checkpoints/
+sam2_install/
+Vision/bore_scope/demo*_probe_*.json
+
+# Calibration / log result text files (data, not config)
+**/K.txt
+**/sync_robot_aruco*.csv
+**/sync_robot_aruco*.txt
+**/extrinsic_result*.txt
+**/recon_log.txt
+**/icp_log.txt
+**/summary_*.txt
+
+# Editor / agent local state
+.claude/
+.vscode/
+
+# Conda env exports (machine-local)
+conda-env
+*.conda-env
+
+# Explicit keeps (negation — these are config, not output)
+!**/.gitkeep
+!doc/**

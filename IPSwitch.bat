@@ -1,7 +1,12 @@
 @echo off
 setlocal
 
-:: Follow Name of Web
+:: [IMPORTANT] The adapter name below MUST match the Ethernet adapter name on your PC.
+:: Before running this script, rename your Ethernet adapter to "RoboterAnnaEthernet":
+::   1. Open PowerShell as Administrator
+::   2. Run: Rename-NetAdapter -Name "Ethernet" -NewName "RoboterAnnaEthernet"
+:: Or: Control Panel -> Network Connections -> Right-click Ethernet -> Rename
+:: You can check adapter names with: Get-NetAdapter
 set AdapterName=RoboterAnnaEthernet
 
 :: KLI 
