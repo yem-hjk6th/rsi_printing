@@ -82,3 +82,9 @@ conda-env
 # Explicit keeps (negation — these are config, not output)
 !**/.gitkeep
 !doc/**
+
+# But still block heavy/binary types even under doc/
+**/*.pdf
+**/*.png
+**/*.jpg
+**/*.jpeg
