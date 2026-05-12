@@ -35,9 +35,11 @@ __pycache__/
 # Sensor / experiment data outputs (videos, meshes, archives, checkpoints)
 *.ply
 *.obj
+*.pcd
 *.mp4
 *.MOV
 *.mov
+*.avi
 *.mkv
 *.bin
 *.pt

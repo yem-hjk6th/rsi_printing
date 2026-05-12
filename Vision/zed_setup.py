@@ -10,12 +10,23 @@ Usage:
 Environment: conda activate zedenv (Python 3.10, pyzed 5.2)
 """
 
+import glob
 import os
 import sys
 
-# ── Paths (win-laptop: RTX 5070, ZED SDK 5.2, CUDA 12.8) ──
+
+def _find_cuda_dir():
+    """Auto-detect the highest installed CUDA Toolkit version on Windows."""
+    hits = sorted(
+        glob.glob(r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*"),
+        reverse=True,
+    )
+    return hits[0] if hits else r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0"
+
+
+# ── Paths (auto-detected CUDA; laptop=RTX 5070/CUDA 12.8, desktop=RTX 5080/CUDA 13.0) ──
 ZED_SDK_DIR = r"C:\Program Files (x86)\ZED SDK"
-CUDA_DIR = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8"
+CUDA_DIR = _find_cuda_dir()
 
 _DLL_DIRS = [
     os.path.join(ZED_SDK_DIR, "bin"),

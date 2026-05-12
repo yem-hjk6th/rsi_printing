@@ -15,12 +15,16 @@ from scipy.ndimage import uniform_filter1d
 
 # ── ZED SDK DLL (Windows) ──
 if os.name == "nt":
+    import glob as _g
+    _cuda_bin = next(iter(sorted(
+        _g.glob(r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*\bin"),
+        reverse=True)), "")
     for p in [
         r"C:\Program Files (x86)\ZED SDK\bin",
         r"C:\Program Files (x86)\ZED SDK\dependencies\bin",
-        r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\bin",
+        _cuda_bin,
     ]:
-        if os.path.isdir(p):
+        if p and os.path.isdir(p):
             os.add_dll_directory(p)
 
 import pyzed.sl as sl
