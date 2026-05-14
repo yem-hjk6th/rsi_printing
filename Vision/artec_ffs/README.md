@@ -105,12 +105,15 @@ python Vision/artec_ffs/pipeline.py capture --mode auto
 
 ## Step 2 — 重建
 
+**默认使用 frame-to-model (FTM)**——前 3 帧 pose-graph warmup 后切到对融合模型配准，对大角跳更鲁棒。
+要回退到纯 pose-graph 用 `--no-ftm`。
+
 ### 不用 FFS（仅 ZED 深度）
 
 ```bash
 conda activate ffs
 python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX"
-python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --ftm
+python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --no-ftm   # 纯 pose-graph
 ```
 
 ### 使用 FFS 深度（需要 GPU）
@@ -118,7 +121,7 @@ python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260
 ```bash
 conda activate ffs
 python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --ffs
-python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --ffs --ftm
+python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --ffs --no-ftm
 ```
 
 `--ffs` 在注册之前：

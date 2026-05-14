@@ -38,6 +38,15 @@ Output (written to <out_dir>, default <data_dir>/artec_recon/):
 import sys, json, time, argparse
 from pathlib import Path
 
+# Force UTF-8 stdout/stderr on Windows so non-ASCII chars in print() (→, ─, ×, …)
+# don't crash with UnicodeEncodeError under the default cp1252 codepage.
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import numpy as np
 import open3d as o3d
 import cv2
@@ -178,14 +187,15 @@ def main():
     rec_p = sub.add_parser("recon", help="Offline reconstruction")
     rec_p.add_argument("data_dir", nargs="?", default=DEFAULT_RECON_DIR)
     rec_p.add_argument("--ftm",    action="store_true",
-                       help="Frame-to-model tracking (better quality)")
-    rec_p.add_argument("--no-ftm", dest="ftm", action="store_false")
+                       help="Frame-to-model tracking (default; drift-resistant)")
+    rec_p.add_argument("--no-ftm", dest="ftm", action="store_false",
+                       help="Disable FTM and use pose-graph instead")
     rec_p.add_argument("--ffs",    action="store_true",
                        help="Replace ZED depth with FFS depth (requires ffs env + GPU)")
     rec_p.add_argument("--no-ffs", dest="ffs", action="store_false")
     rec_p.add_argument("--out",    type=str, default=None,
                        help="Output directory (default: <data_dir>/artec_recon/)")
-    rec_p.set_defaults(ftm=False, ffs=False)
+    rec_p.set_defaults(ftm=True, ffs=False)
 
     args = parser.parse_args()
 
