@@ -79,6 +79,9 @@ Vision/bore_scope/demo*_probe_*.json
 conda-env
 *.conda-env
 
+# Machine-local config side-channels (paths, machine identity — never commit)
+**/config_local.py
+
 # Explicit keeps (negation — these are config, not output)
 !**/.gitkeep
 !doc/**

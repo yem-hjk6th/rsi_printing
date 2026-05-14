@@ -57,9 +57,23 @@ OUTLIER_NB      = 30
 OUTLIER_STD     = 2.0
 
 # ── FFS depth refinement ─────────────────────────────────────────────────────
-# Weights are NOT copied (too large). Point to original repo weights.
-# Options (best→fastest):  23-36-37 / 20-26-39 / 20-30-48
-FFS_REPO_ROOT   = Path(r"C:\Users\888y9\Desktop\Repo\Fast-FoundationStereo")
+# Weights are NOT copied (too large). Point to original Fast-FoundationStereo repo.
+# Variants (best→fastest):  23-36-37 / 20-26-39 / 20-30-48
+#
+# FFS_REPO_ROOT resolution order (per-machine, never commit a hardcoded path here):
+#   1. FFS_REPO_ROOT environment variable
+#   2. sibling config_local.py defining FFS_REPO_ROOT  (gitignored — see README)
+#   3. placeholder that triggers FileNotFoundError in ffs_depth.load_model()
+import os as _os
+_env_root = _os.environ.get("FFS_REPO_ROOT")
+if _env_root:
+    FFS_REPO_ROOT = Path(_env_root)
+else:
+    try:
+        from config_local import FFS_REPO_ROOT  # type: ignore[no-redef]
+        FFS_REPO_ROOT = Path(FFS_REPO_ROOT)
+    except ImportError:
+        FFS_REPO_ROOT = Path("<UNSET — set FFS_REPO_ROOT env var or create config_local.py>")
 FFS_WEIGHTS_DIR = FFS_REPO_ROOT / "weights" / "23-36-37" / "model_best_bp2_serialize.pth"
 FFS_VALID_ITERS = 8       # ↓ to 4 for faster inference; ↑ to 16 for best quality
 FFS_MAX_DISP    = 416     # must match model's baked-in max_disp (23-36-37 weights); ZED2i covers depth≥0.55m

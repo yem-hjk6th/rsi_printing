@@ -5,18 +5,18 @@ Extends artec_imit/pipeline.py with an optional --ffs flag that replaces
 ZED SGM depth with Fast-FoundationStereo depth before registration.
 
 Subcommands:
-    capture             Run live capture session (requires ZED camera, zedenv)
+    capture             Run live capture session (requires ZED camera)
     recon <data_dir>    Offline reconstruction
 
-Usage:
-    # Capture (zedenv):
+Usage (all in the 'ffs' conda env, which now ships pyzed + Open3D + PyTorch):
+    # Capture:
     python Vision/artec_ffs/pipeline.py capture
     python Vision/artec_ffs/pipeline.py capture --mode auto
 
-    # Reconstruct with ZED depth (zedenv):
+    # Reconstruct with ZED depth:
     python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX"
 
-    # Reconstruct with FFS depth (ffs env — needs GPU + PyTorch):
+    # Reconstruct with FFS depth (needs CUDA-enabled PyTorch):
     python Vision/artec_ffs/pipeline.py recon "Vision/vision_demo_test_res/ffs_20260506_XXXXXX" --ffs
 
     # FFS + Frame-to-model (best quality):
@@ -26,8 +26,8 @@ Usage:
     python Vision/artec_ffs/pipeline.py recon <data_dir> --ffs --out <out_dir>
 
 Note on envs:
-    --ffs requires the 'ffs' conda env (PyTorch + CUDA).
-    Without --ffs the 'zedenv' env is sufficient (Open3D only).
+    'ffs' is the single env for both capture and recon on this machine.
+    --ffs additionally requires CUDA-enabled PyTorch in that env.
 
 Output (written to <out_dir>, default <data_dir>/artec_recon/):
     mesh.ply          Marching Cubes mesh, post-processed
@@ -171,7 +171,7 @@ def main():
     parser = argparse.ArgumentParser(description="artec_ffs pipeline")
     sub    = parser.add_subparsers(dest="cmd")
 
-    cap_p = sub.add_parser("capture", help="Live capture (zedenv)")
+    cap_p = sub.add_parser("capture", help="Live capture (ffs env: pyzed)")
     cap_p.add_argument("--mode", choices=["manual", "auto"], default="manual")
     cap_p.add_argument("--out",  type=str, default=None)
 

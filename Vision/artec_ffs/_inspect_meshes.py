@@ -1,9 +1,15 @@
-"""Quick mesh/pcd quality inspection for the new dataset."""
+"""Quick mesh/pcd quality inspection for the new dataset.
+
+Usage: python _inspect_meshes.py <capture_dir>
+       python _inspect_meshes.py        # uses DEFAULT below
+"""
+import sys
 import open3d as o3d
 import numpy as np
 from pathlib import Path
 
-base = Path(r"c:\Users\888y9\Desktop\rsi_printing\vision\vision_demo_test_res\ffs_20260508_160056")
+DEFAULT = Path(__file__).resolve().parent.parent / "vision_demo_test_res" / "ffs_20260508_160056"
+base = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT
 
 def stats(name, sub):
     print(f"\n=== {name} ({sub}) ===")

@@ -18,10 +18,16 @@ artec_ffs/
   ffs_core/        FFS 源码（core/ + Utils.py，从 Fast-FoundationStereo 拷入）
 ```
 
-**权重不在此目录**，在 `config.py` 的 `FFS_WEIGHTS_DIR` 指向原始路径：
-```
-C:\Users\888y9\Desktop\Repo\Fast-FoundationStereo\weights\23-36-37\
-```
+**权重不在此目录**，`config.py` 的 `FFS_WEIGHTS_DIR` 指向 Fast-FoundationStereo 仓库的 `weights/<variant>/` 子目录。
+每台机器的路径不同 — 配置二选一：
+
+1. 设环境变量：`set FFS_REPO_ROOT=<your-Fast-FoundationStereo-root>` （Linux/Mac: `export ...`）
+2. 在 `Vision/artec_ffs/` 下创建 `config_local.py`（已 gitignore）：
+   ```python
+   from pathlib import Path
+   FFS_REPO_ROOT = Path(r"<your-Fast-FoundationStereo-root>")
+   ```
+路径下需有 `weights/23-36-37/model_best_bp2_serialize.pth`（或 `20-26-39` / `20-30-48` 变体）。
 
 ---
 
@@ -65,7 +71,7 @@ Vision/vision_demo_test_res/ffs_YYYYMMDD_HHMMSS/   ← capture 输出 / recon �
 ## 工作目录
 
 ```bash
-cd C:\Users\888y9\Desktop\rsi_printing
+cd <path-to-rsi_printing>
 ```
 
 ---
