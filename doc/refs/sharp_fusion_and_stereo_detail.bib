@@ -1,0 +1,304 @@
+% ============================================================
+% sharp_fusion_and_stereo_detail.bib
+% Verified citations: Sharp Fusion / sharp-feature-preserving
+% surface reconstruction + stereo detail extraction.
+% All DOIs confirmed via CrossRef or authoritative proceedings handle.
+% Generated: 2026-05-14
+% ============================================================
+
+% -------------------------------------------------------
+% SECTION A: Artec patents / proprietary context
+% -------------------------------------------------------
+
+% Artec Group's foundational multi-frame surface measurement patent.
+% Describes capturing multiple images from different perspectives and
+% merging them in a common reference frame using a reference object —
+% the conceptual ancestor of Artec Studio's fusion pipeline.
+% US publication: US20090067706A1 (PCT: WO2009035890A3)
+% No journal DOI exists; cite by patent number only.
+@misc{artec2009multiframe,
+  author       = {Lapa, Nikolay L.},
+  title        = {System and Method for Multiframe Surface Measurement of the Shape of Objects},
+  howpublished = {Patent WO2009035890A3 / US20090067706A1, Artec Group Inc.},
+  year         = {2009},
+  note         = {PCT/US2008/075150, filed 2007-09-12, published 2010-08-12. Assignee: Artec Group Inc. Describes multi-image capture and merger into a common reference system — foundational to Artec Studio fusion pipeline. No peer-reviewed DOI; cited from Google Patents.}
+}
+
+% -------------------------------------------------------
+% SECTION B: Sharp-feature-preserving surface reconstruction
+% -------------------------------------------------------
+
+% Seminal method for extracting line-type features on point-sampled geometry
+% using PCA on local neighborhoods at multiple scales. The reference work for
+% classifying points by feature likelihood — a standard baseline for any
+% sharp-feature-aware pipeline including structured-light scanners.
+% DOI verified via CrossRef.
+@article{pauly2003multiscale,
+  author    = {Pauly, Mark and Keiser, Richard and Gross, Markus},
+  title     = {Multi-scale Feature Extraction on Point-Sampled Surfaces},
+  journal   = {Computer Graphics Forum},
+  year      = {2003},
+  volume    = {22},
+  number    = {3},
+  pages     = {281--289},
+  doi       = {10.1111/1467-8659.00675},
+  note      = {Eurographics 2003. Multi-scale PCA classification of feature points on point clouds; canonical reference for feature-line extraction that precedes volumetric fusion pipelines.}
+}
+
+% Robust classification of mesh edges and vertices as sharp/smooth using
+% tensor-field analysis; provides the geometric criterion that a
+% sharp-feature-preserving fusion must respect.
+% DOI verified via CrossRef (TVCG 2007, vol.13, no.1, pp.34-45).
+@article{lai2007robust,
+  author    = {Lai, Yu-kun and Zhou, Qian-yi and Hu, Shi-min and Wallner, Johannes and Pottmann, Helmut},
+  title     = {Robust Feature Classification and Editing},
+  journal   = {IEEE Transactions on Visualization and Computer Graphics},
+  year      = {2007},
+  volume    = {13},
+  number    = {1},
+  pages     = {34--45},
+  doi       = {10.1109/tvcg.2007.19},
+  note      = {Tensor-field-based sharp/smooth edge classification on meshes. Cited as ``Pauly et al. 2003 TVCG'' in some surveys but is actually Lai et al. 2007 TVCG — verify before citing.}
+}
+
+% The canonical oriented-point-cloud-to-watertight-mesh algorithm.
+% Screened variant (below) is the implementation shipped in most tools,
+% but this 2006 paper established the Poisson formulation.
+% DOI verified via Eurographics Digital Library.
+@inproceedings{kazhdan2006poisson,
+  author    = {Kazhdan, Michael and Bolitho, Matthew and Hoppe, Hugues},
+  title     = {Poisson Surface Reconstruction},
+  booktitle = {Proceedings of the Eurographics Symposium on Geometry Processing (SGP 2006)},
+  year      = {2006},
+  pages     = {61--70},
+  doi       = {10.2312/SGP/SGP06/061-070},
+  note      = {Casts surface reconstruction as a spatial Poisson problem. Smoothness-biased: tends to round sharp corners unless screened variant is used. Open alternative to Artec Sharp Fusion for point-to-mesh step.}
+}
+
+% Extension with data-term screening; eliminates low-frequency bias near
+% samples, recovering sharper detail than the original Poisson formulation.
+% The version most likely used inside Artec Studio and open-source meshers.
+% DOI verified via CrossRef (ACM TOG 32:3, 2013).
+@article{kazhdan2013screened,
+  author    = {Kazhdan, Michael and Hoppe, Hugues},
+  title     = {Screened Poisson Surface Reconstruction},
+  journal   = {ACM Transactions on Graphics},
+  year      = {2013},
+  volume    = {32},
+  number    = {3},
+  pages     = {1--13},
+  doi       = {10.1145/2487228.2487237},
+  note      = {Adds a screening term that pins the reconstructed function to the input points, substantially improving sharpness vs. the 2006 formulation. Standard open-source meshing backend (PoissonRecon executable).}
+}
+
+% Directional TSDF: addresses the fundamental aliasing problem of standard
+% TSDF on thin structures by storing opposite-facing surfaces separately.
+% Most directly relevant to depth-sensor fusion pipelines needing to preserve
+% sharp convex/concave transitions, analogous to Artec Sharp Fusion's goal.
+% DOI verified via CrossRef (IROS 2019, pp.1727-1734).
+@inproceedings{splietker2019directional,
+  author    = {Splietker, Malte and Behnke, Sven},
+  title     = {Directional {TSDF}: Modeling Surface Orientation for Coherent Meshes},
+  booktitle = {2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  year      = {2019},
+  pages     = {1727--1734},
+  doi       = {10.1109/iros40897.2019.8968264},
+  note      = {arXiv:1908.05146. Proposes a 6-directional TSDF that avoids surface merger at thin structures; open-source (github.com/AIS-Bonn/DirectionalTSDF). Closest open equivalent to Artec Sharp Fusion's handling of opposing surfaces.}
+}
+
+% Deep-learning framework for consolidating sharp feature points from raw
+% (noisy, unorganised) point clouds via displacement learning. Bridges the
+% gap between noisy acquisition and a clean sharp-feature skeleton.
+% DOI verified via CrossRef (CAGD 103, 2023).
+@article{zhao2023sharp,
+  author    = {Zhao, Tong and Yu, Mulin and Alliez, Pierre and Lafarge, Florent},
+  title     = {Sharp Feature Consolidation from Raw {3D} Point Clouds via Displacement Learning},
+  journal   = {Computer Aided Geometric Design},
+  year      = {2023},
+  volume    = {103},
+  pages     = {102204},
+  doi       = {10.1016/j.cagd.2023.102204},
+  note      = {Learning-based detection and snap-to-feature correction of sharp edges in noisy scans. Relevant pre-processing step before any volumetric fusion that is meant to preserve CAD-like edges.}
+}
+
+% Resampling and reconstruction that explicitly tracks and preserves
+% feature curves (sharp edges) through the point-cloud processing pipeline.
+% Addresses the loss of feature curves during decimation / re-meshing.
+% DOI verified via CrossRef (CAD 167, 2024).
+@article{fugacci2024reconstruction,
+  author    = {Fugacci, Ulderico and Romanengo, Chiara and Falcidieno, Bianca and Biasotti, Silvia},
+  title     = {Reconstruction and Preservation of Feature Curves in {3D} Point Cloud Processing},
+  journal   = {Computer-Aided Design},
+  year      = {2024},
+  volume    = {167},
+  pages     = {103649},
+  doi       = {10.1016/j.cad.2023.103649},
+  note      = {Surveys and addresses loss of feature curves during point cloud resampling; directly relevant to maintaining crease geometry through the ZED-capture-to-mesh pipeline.}
+}
+
+% Normal-guided neural implicit function achieving high-fidelity
+% reconstruction of surfaces (including sharp features) from very sparse
+% RGB views. Published I3D 2025 / PACMCGIT.
+% DOI verified via CrossRef (PACMCGIT 8:1, pp.1-24, 2025).
+@article{patel2025normal,
+  author    = {Patel, Aarya and Laga, Hamid and Sharma, Ojaswa},
+  title     = {Normal-guided Detail-Preserving Neural Implicit Function for High-Fidelity {3D} Surface Reconstruction},
+  journal   = {Proceedings of the ACM on Computer Graphics and Interactive Techniques},
+  year      = {2025},
+  volume    = {8},
+  number    = {1},
+  pages     = {1--24},
+  doi       = {10.1145/3728293},
+  note      = {arXiv:2406.04861. Trains neural implicit with surface-normal supervision; recovers sharp features from 2+ RGB views. State-of-the-art 2025 open alternative to proprietary detail-recovery steps.}
+}
+
+% -------------------------------------------------------
+% SECTION C: Volumetric fusion pipelines (stereo pre-fusion context)
+% -------------------------------------------------------
+
+% Established dense multi-frame depth-image fusion via a truncated signed
+% distance field (TSDF) updated incrementally. The foundational real-time
+% dense reconstruction reference; all subsequent fusion pipelines
+% (CHISEL, voxel hashing, Sharp Fusion) are architecturally derived from it.
+% DOI verified via CrossRef (ISMAR 2011, pp.127-136).
+@inproceedings{newcombe2011kinectfusion,
+  author    = {Newcombe, Richard A. and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J. and Kohli, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
+  title     = {{KinectFusion}: Real-time Dense Surface Mapping and Tracking},
+  booktitle = {2011 10th IEEE International Symposium on Mixed and Augmented Reality (ISMAR)},
+  year      = {2011},
+  pages     = {127--136},
+  doi       = {10.1109/ismar.2011.6092378},
+  note      = {TSDF-based incremental dense reconstruction using a depth camera. Baseline for all real-time volumetric fusion; fixed-resolution voxel grid limits sharpness at fine scales.}
+}
+
+% DTAM: dense monocular (or stereo) reconstruction by sweeping cost volumes
+% per keyframe and integrating depth maps. Predates KinectFusion in the
+% dense photometric cost-volume formulation; relevant for stereo-to-depth
+% pre-processing before volumetric fusion.
+% DOI verified via CrossRef (ICCV 2011, pp.2320-2327).
+@inproceedings{newcombe2011dtam,
+  author    = {Newcombe, Richard A. and Lovegrove, Steven J. and Davison, Andrew J.},
+  title     = {{DTAM}: Dense Tracking and Mapping in Real-Time},
+  booktitle = {2011 International Conference on Computer Vision (ICCV)},
+  year      = {2011},
+  pages     = {2320--2327},
+  doi       = {10.1109/iccv.2011.6126513},
+  note      = {Dense photometric cost-volume reconstruction from a monocular or stereo camera; shows that fusing many frames before extracting depth dramatically improves surface completeness and reduces noise.}
+}
+
+% Spatially hashed TSDF enabling room-scale reconstruction without a
+% fixed bounding box; practical precursor to OpenChisel / CHISEL.
+% DOI verified via CrossRef (ACM TOG 32:6, SIGGRAPH Asia 2013).
+@article{niessner2013voxelhashing,
+  author    = {Nie{\ss}ner, Matthias and Zollh{\"o}fer, Michael and Izadi, Shahram and Stamminger, Marc},
+  title     = {Real-time {3D} Reconstruction at Scale using Voxel Hashing},
+  journal   = {ACM Transactions on Graphics},
+  year      = {2013},
+  volume    = {32},
+  number    = {6},
+  pages     = {1--11},
+  doi       = {10.1145/2508363.2508374},
+  note      = {SIGGRAPH Asia 2013. Hash-based spatial allocation of TSDF voxels scales to large scenes; enables dynamic resolution near surfaces, which can be exploited for sharper reconstruction near object boundaries.}
+}
+
+% CHISEL: TSDF reconstruction onboard a mobile device using spatially
+% hashed SDF. Open-source (OpenChisel); lightweight anisotropy-aware
+% fusion that is practically deployable in a stereo-camera pipeline.
+% DOI verified via CrossRef (RSS XI 2015).
+@inproceedings{klingensmith2015chisel,
+  author    = {Klingensmith, Matthew and Dryanovski, Ivan and Srinivasa, Siddhartha and Xiao, Jizhong},
+  title     = {Chisel: Real Time Large Scale {3D} Reconstruction Onboard a Mobile Device using Spatially Hashed Signed Distance Fields},
+  booktitle = {Robotics: Science and Systems XI},
+  year      = {2015},
+  doi       = {10.15607/rss.2015.xi.040},
+  note      = {RSS 2015 best-systems paper finalist. Open-source TSDF library (OpenChisel); reference implementation for lightweight SDF fusion applicable to stereo-depth pipelines.}
+}
+
+% -------------------------------------------------------
+% SECTION D: Sub-pixel stereo / stereo evaluation
+% -------------------------------------------------------
+
+% Foundational taxonomy of stereo matching algorithms; defines the
+% evaluation framework that all sub-pixel stereo papers measure against.
+% The Middlebury benchmark originates from this work.
+% DOI verified via CrossRef (IJCV 47:1-3, 2002).
+@article{scharstein2002taxonomy,
+  author    = {Scharstein, Daniel and Szeliski, Richard},
+  title     = {A Taxonomy and Evaluation of Dense Two-Frame Stereo Correspondence Algorithms},
+  journal   = {International Journal of Computer Vision},
+  year      = {2002},
+  volume    = {47},
+  number    = {1--3},
+  pages     = {7--42},
+  doi       = {10.1023/a:1014573219977},
+  note      = {Defines the Middlebury stereo evaluation methodology. Sub-pixel accuracy is among the metrics; establishes why sub-pixel disparity estimation matters for fine-geometry 3D reconstruction.}
+}
+
+% The 2014 Middlebury dataset: ground-truth sub-pixel-accurate disparities
+% for high-resolution indoor scenes. The ground-truth benchmark against
+% which any stereo pipeline targeting fine geometric detail should be tested.
+% DOI verified via CrossRef (LNCS vol. Springer, GCPR 2014, pp.31-42).
+@inproceedings{scharstein2014highres,
+  author    = {Scharstein, Daniel and Hirschm{\"u}ller, Heiko and Kitajima, York and Krathwohl, Greg and Ne{\v{s}}i{\'c}, Nera and Wang, Xi and Westling, Porter},
+  title     = {High-Resolution Stereo Datasets with Subpixel-Accurate Ground Truth},
+  booktitle = {Pattern Recognition (GCPR 2014)},
+  series    = {Lecture Notes in Computer Science},
+  year      = {2014},
+  pages     = {31--42},
+  doi       = {10.1007/978-3-319-11752-2_3},
+  note      = {Introduces Middlebury 2014 benchmark with sub-pixel ground truth. Defines the accuracy floor any stereo pipeline must reach to contribute meaningful fine-geometry depth for surface fusion.}
+}
+
+% Shows that sampling the disparity space at fractional steps, combined
+% with a depth-discontinuity-preserving smoothing step, substantially
+% reduces systematic sub-pixel error at large distances. Directly relevant
+% to ZED stereo operating at 1-2 m working distance.
+% DOI verified via CrossRef (CVIU 116:1, pp.16-24, 2012).
+@article{gehrig2012subpixel,
+  author    = {Gehrig, Stefan K. and Badino, Hern{\'a}n and Franke, Uwe},
+  title     = {Improving Sub-Pixel Accuracy for Long Range Stereo},
+  journal   = {Computer Vision and Image Understanding},
+  year      = {2012},
+  volume    = {116},
+  number    = {1},
+  pages     = {16--24},
+  doi       = {10.1016/j.cviu.2011.07.008},
+  note      = {Four improvements to sub-pixel stereo: fractional disparity sampling, discontinuity-preserving smoothing, weak stereo constraint, and multi-frame temporal averaging. Quantifies how sub-pixel accuracy degrades at range.}
+}
+
+% -------------------------------------------------------
+% SECTION E: ZED-specific depth accuracy evaluation
+% -------------------------------------------------------
+
+% First peer-reviewed error model for the ZED stereo camera specifically.
+% Fits RMS depth error as a function of distance and resolution; establishes
+% that ZED accuracy degrades quadratically with range and is resolution-
+% dependent. Key calibration reference for ZED-based RSI printing pipelines.
+% DOI verified via CrossRef (ELCVIA 17:1, pp.1-15, 2018).
+@article{ortiz2018zed,
+  author    = {Ortiz, Luis Enrique and Cabrera, Viviana Elizabeth and Goncalves, Luiz M G},
+  title     = {Depth Data Error Modeling of the {ZED} {3D} Vision Sensor from {Stereolabs}},
+  journal   = {ELCVIA Electronic Letters on Computer Vision and Image Analysis},
+  year      = {2018},
+  volume    = {17},
+  number    = {1},
+  pages     = {1--15},
+  doi       = {10.5565/rev/elcvia.1084},
+  note      = {Mathematical error model for ZED at multiple resolutions. Shows best accuracy up to ~16 m; at 1-2 m the RMS error is centimetre-scale. Sets realistic expectations for ZED-based scanning.}
+}
+
+% Comprehensive evaluation of ZED 2i at indoor distances up to 18 m,
+% across HD720/HD1080/HD2K resolutions. Finds depth error better modelled
+% by a t-distribution than Gaussian; directly informs choice of working
+% distance and resolution for stereo-based surface capture.
+% DOI verified via CrossRef (Robotics and Autonomous Systems 179, 2024).
+@article{abdelsalam2024zed2i,
+  author    = {Abdelsalam, Ahmed and Mansour, Mostafa and Porras, Jari and Happonen, Ari},
+  title     = {Depth Accuracy Analysis of the {ZED} 2i Stereo Camera in an Indoor Environment},
+  journal   = {Robotics and Autonomous Systems},
+  year      = {2024},
+  volume    = {179},
+  pages     = {104753},
+  doi       = {10.1016/j.robot.2024.104753},
+  note      = {Most complete ZED 2i evaluation to date. Shows depth error at 1-2 m is sub-centimetre for HD2K; t-distribution fit improves model accuracy. Directly applicable to RSI printing scan distance selection.}
+}

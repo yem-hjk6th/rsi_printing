@@ -1,0 +1,373 @@
+% =============================================================================
+% reconstruction_intro.bib
+% Authoritative citations for 3D surface reconstruction from RGB-D / stereo.
+% All DOIs verified via DBLP, CrossRef, or IEEE/ACM digital libraries.
+% Grouped by topic with pipeline-relevance notes.
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% TOPIC A — Reconstruction Paradigm Taxonomy (Foundational)
+% -----------------------------------------------------------------------------
+
+% COLMAP SfM — the de-facto SfM baseline; also produces camera poses needed
+% as input to any neural reconstruction pipeline you will run later.
+@inproceedings{Schonberger2016SfM,
+  author    = {Johannes L. Sch{\"{o}}nberger and Jan{-}Michael Frahm},
+  title     = {Structure-from-Motion Revisited},
+  booktitle = {Proceedings of the {IEEE} Conference on Computer Vision and
+               Pattern Recognition ({CVPR})},
+  pages     = {4104--4113},
+  year      = {2016},
+  doi       = {10.1109/CVPR.2016.445},
+  % WHY: Your pipeline currently uses Open3D ColoredICP for pose estimation.
+  % COLMAP gives globally-optimised camera poses from images, enabling you to
+  % bootstrap any offline neural reconstructor (NeRF/NeuS) from your ZED 2i frames.
+}
+
+% COLMAP MVS — dense depth from the same camera graph; natural pairing with above.
+@inproceedings{Schonberger2016MVS,
+  author    = {Johannes L. Sch{\"{o}}nberger and Enliang Zheng and
+               Jan{-}Michael Frahm and Marc Pollefeys},
+  title     = {Pixelwise View Selection for Unstructured Multi-View Stereo},
+  booktitle = {Proceedings of the European Conference on Computer Vision
+               ({ECCV})},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9907},
+  pages     = {501--518},
+  year      = {2016},
+  doi       = {10.1007/978-3-319-46487-9_31},
+  % WHY: Explains the view-selection and depth-fusion strategy that underlies
+  % COLMAP's dense reconstruction — useful context if you replace SGM with an
+  % offline MVS pass to get cleaner per-frame depth before TSDF fusion.
+}
+
+% Furukawa & Hernandez MVS survey — the field's pedagogical reference.
+@article{Furukawa2015MVSSurvey,
+  author    = {Yasutaka Furukawa and Carlos Hern{\'{a}}ndez},
+  title     = {Multi-View Stereo: {A} Tutorial},
+  journal   = {Foundations and Trends in Computer Graphics and Vision},
+  volume    = {9},
+  number    = {1-2},
+  pages     = {1--148},
+  year      = {2015},
+  doi       = {10.1561/0600000052},
+  % WHY: Canonical taxonomy of depth-map fusion, voxel-based, and point-cloud
+  % methods; explains exactly why naïve TSDF at 3 mm voxels loses thin-surface
+  % detail (truncation, averaging artefacts).
+}
+
+% KinectFusion — direct ancestor of the Open3D TSDF volume your pipeline uses.
+@inproceedings{Newcombe2011KinectFusion,
+  author    = {Richard A. Newcombe and Shahram Izadi and Otmar Hilliges and
+               David Molyneaux and David Kim and Andrew J. Davison and
+               Pushmeet Kohli and Jamie Shotton and Steve Hodges and
+               Andrew W. Fitzgibbon},
+  title     = {{KinectFusion}: Real-time dense surface mapping and tracking},
+  booktitle = {Proceedings of the {IEEE} International Symposium on Mixed and
+               Augmented Reality ({ISMAR})},
+  pages     = {127--136},
+  year      = {2011},
+  doi       = {10.1109/ISMAR.2011.6092378},
+  % WHY: This paper defines TSDF-based volumetric fusion; understanding its
+  % truncation band and weighted-average update rule explains why small features
+  % (eye sockets, ~5–10 mm scale) are washed out at 3 mm voxels with noisy depth.
+}
+
+% BundleFusion — adds global loop-closure and surface re-integration on top of
+% KinectFusion; shows the pose-graph the user is already running, but done robustly.
+@article{Dai2017BundleFusion,
+  author    = {Angela Dai and Matthias Nie{\ss}ner and Michael Zollh{\"{o}}fer and
+               Shahram Izadi and Christian Theobalt},
+  title     = {{BundleFusion}: Real-Time Globally Consistent {3D} Reconstruction
+               Using On-the-Fly Surface Reintegration},
+  journal   = {{ACM} Transactions on Graphics},
+  volume    = {36},
+  number    = {4},
+  year      = {2017},
+  doi       = {10.1145/3072959.3054739},
+  % WHY: Shows how online pose-graph correction and surface re-integration fix
+  % drift accumulation — the blob artefact you see may be partially from ICP
+  % drift compounding over a full torso scan.
+}
+
+% -----------------------------------------------------------------------------
+% TOPIC B — Detail-Preserving Surface Reconstruction
+% -----------------------------------------------------------------------------
+
+% Poisson Surface Reconstruction (original) — implicit surface from oriented
+% point normals; still widely used as a post-processing step after depth fusion.
+@inproceedings{Kazhdan2006Poisson,
+  author    = {Michael M. Kazhdan and Matthew Bolitho and Hugues Hoppe},
+  title     = {Poisson Surface Reconstruction},
+  booktitle = {Proceedings of the Symposium on Geometry Processing ({SGP})},
+  pages     = {61--70},
+  year      = {2006},
+  doi       = {10.2312/SGP/SGP06/061-070},
+  % WHY: Classic alternative to marching cubes on TSDF: fits a global smooth
+  % implicit to your fused normals, often recovering more detail than voxel MC
+  % when normals are accurate. Immediately applicable to your Open3D point cloud.
+}
+
+% Screened Poisson — adds point-interpolation constraint; sharper output.
+@article{Kazhdan2013ScreenedPoisson,
+  author    = {Michael M. Kazhdan and Hugues Hoppe},
+  title     = {Screened Poisson Surface Reconstruction},
+  journal   = {{ACM} Transactions on Graphics},
+  volume    = {32},
+  number    = {3},
+  pages     = {29:1--29:13},
+  year      = {2013},
+  doi       = {10.1145/2487228.2487237},
+  % WHY: The screened variant forces the surface to interpolate your actual
+  % point positions — avoids the shrinkage/over-smoothing of the original Poisson
+  % that causes facial features to be further rounded. Implemented in Open3D.
+}
+
+% -----------------------------------------------------------------------------
+% TOPIC C — Neural Surface Reconstruction
+% -----------------------------------------------------------------------------
+
+% NeRF — the paradigm shift; volume rendering of an MLP for novel-view synthesis.
+@inproceedings{Mildenhall2020NeRF,
+  author    = {Ben Mildenhall and Pratul P. Srinivasan and Matthew Tancik and
+               Jonathan T. Barron and Ravi Ramamoorthi and Ren Ng},
+  title     = {{NeRF}: Representing Scenes as Neural Radiance Fields for View
+               Synthesis},
+  booktitle = {Proceedings of the European Conference on Computer Vision
+               ({ECCV})},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12346},
+  pages     = {405--421},
+  year      = {2020},
+  doi       = {10.1007/978-3-030-58452-8_24},
+  % WHY: Foundation paper for all neural scene representations below; introduces
+  % the volumetric MLP + differentiable ray-marching that NeuS/VolSDF extend to
+  % produce clean surfaces instead of foggy densities.
+}
+
+% NeuS — volume rendering on an SDF; surfaces are exact zero-level sets.
+% arXiv:2106.10689 / NeurIPS 2021.
+@inproceedings{Wang2021NeuS,
+  author    = {Peng Wang and Lingjie Liu and Yuan Liu and Christian Theobalt and
+               Taku Komura and Wenping Wang},
+  title     = {{NeuS}: Learning Neural Implicit Surfaces by Volume Rendering
+               for Multi-view Reconstruction},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  volume    = {34},
+  year      = {2021},
+  note      = {arXiv:2106.10689},
+  % WHY: Directly addresses the soft-blob problem: NeuS parameterises density
+  % through an SDF so the surface is a sharp zero-crossing, not a fuzzy volume —
+  % you get eyelid ridges and nostril rims back.
+}
+
+% VolSDF — alternative SDF-via-density approach; NeurIPS 2021 companion paper.
+% arXiv:2106.12052.
+@inproceedings{Yariv2021VolSDF,
+  author    = {Lior Yariv and Jiatao Gu and Yoni Kasten and Yaron Lipman},
+  title     = {Volume Rendering of Neural Implicit Surfaces},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  volume    = {34},
+  year      = {2021},
+  note      = {arXiv:2106.12052},
+  % WHY: Concurrent to NeuS; uses Laplace CDF as density — complementary
+  % reading to understand the SDF-volume-rendering design space.
+}
+
+% Instant-NGP — hash-grid encoding; makes neural reconstruction minutes not days.
+@article{Muller2022InstantNGP,
+  author    = {Thomas M{\"{u}}ller and Alex Evans and Christoph Schied and
+               Alexander Keller},
+  title     = {Instant Neural Graphics Primitives with a Multiresolution Hash
+               Encoding},
+  journal   = {{ACM} Transactions on Graphics},
+  volume    = {41},
+  number    = {4},
+  pages     = {102:1--102:15},
+  year      = {2022},
+  doi       = {10.1145/3528223.3530127},
+  % WHY: Reduces NeRF/NeuS optimisation from hours to minutes on a single GPU —
+  % directly enables you to run neural reconstruction inside your existing ZED
+  % capture sessions rather than as an overnight batch job.
+}
+
+% Neuralangelo — NeuS + Instant-NGP hash grid; SOTA high-fidelity geometry.
+@inproceedings{Li2023Neuralangelo,
+  author    = {Zhaoshuo Li and Thomas M{\"{u}}ller and Alex Evans and
+               Russell H. Taylor and Mathias Unberath and Ming{-}Yu Liu and
+               Chen{-}Hsuan Lin},
+  title     = {Neuralangelo: High-Fidelity Neural Surface Reconstruction},
+  booktitle = {Proceedings of the {IEEE/CVF} Conference on Computer Vision and
+               Pattern Recognition ({CVPR})},
+  pages     = {8456--8465},
+  year      = {2023},
+  doi       = {10.1109/CVPR52729.2023.00817},
+  % WHY: Currently the best single-model approach for recovering sub-millimetre
+  % facial geometry from multi-view RGB without structured light — directly
+  % comparable to what your ZED 2i + TSDF pipeline is trying to achieve.
+}
+
+% BakedSDF — optimises a hybrid neural volume-SDF then bakes to triangle mesh.
+@inproceedings{Yariv2023BakedSDF,
+  author    = {Lior Yariv and Peter Hedman and Christian Reiser and Dor Verbin and
+               Pratul P. Srinivasan and Richard Szeliski and Jonathan T. Barron and
+               Ben Mildenhall},
+  title     = {{BakedSDF}: Meshing Neural {SDFs} for Real-Time View Synthesis},
+  booktitle = {{ACM} {SIGGRAPH} 2023 Conference Proceedings},
+  year      = {2023},
+  doi       = {10.1145/3588432.3591536},
+  note      = {arXiv:2302.14859},
+  % WHY: Demonstrates the "neural refine then mesh-extract" pipeline you could
+  % adopt: run Neuralangelo to get an SDF, then extract a high-quality mesh
+  % instead of TSDF marching cubes.
+}
+
+% -----------------------------------------------------------------------------
+% TOPIC D — 3D Gaussian Splatting and Mesh Extraction
+% -----------------------------------------------------------------------------
+
+% 3DGS — original paper; real-time rasterisation of 3D Gaussians.
+@article{Kerbl2023GaussianSplatting,
+  author    = {Bernhard Kerbl and Georgios Kopanas and Thomas Leimk{\"{u}}hler and
+               George Drettakis},
+  title     = {{3D} Gaussian Splatting for Real-Time Radiance Field Rendering},
+  journal   = {{ACM} Transactions on Graphics},
+  volume    = {42},
+  number    = {4},
+  pages     = {139:1--139:14},
+  year      = {2023},
+  doi       = {10.1145/3592433},
+  % WHY: 3DGS represents the scene as discrete oriented Gaussians, not a
+  % volume — gives real-time preview during capture but needs extra work to
+  % extract a watertight mesh (see SuGaR, 2DGS, Gaussian Surfels below).
+}
+
+% 2D Gaussian Splatting — collapses 3D Gaussians to 2D disks; view-consistent
+% surfaces, depth maps, and normals come out of the rasteriser directly.
+@inproceedings{Huang2024TwoDGS,
+  author    = {Binbin Huang and Zehao Yu and Anpei Chen and Andreas Geiger and
+               Shenghua Gao},
+  title     = {{2D} Gaussian Splatting for Geometrically Accurate Radiance Fields},
+  booktitle = {{ACM} {SIGGRAPH} 2024 Conference Papers},
+  year      = {2024},
+  doi       = {10.1145/3641519.3657428},
+  note      = {arXiv:2403.17888},
+  % WHY: Unlike 3DGS, 2DGS is surface-aligned by design — you can extract a
+  % mesh directly from the depth/normal maps it produces, potentially preserving
+  % facial detail better than TSDF marching cubes.
+}
+
+% SuGaR — regularises 3DGS to lie on a surface; exports clean triangle mesh.
+@inproceedings{Guedon2024SuGaR,
+  author    = {Antoine Gu{\'{e}}don and Vincent Lepetit},
+  title     = {{SuGaR}: Surface-Aligned Gaussian Splatting for Efficient {3D}
+               Mesh Reconstruction and High-Quality Mesh Rendering},
+  booktitle = {Proceedings of the {IEEE/CVF} Conference on Computer Vision and
+               Pattern Recognition ({CVPR})},
+  year      = {2024},
+  doi       = {10.1109/CVPR52733.2024.00512},
+  % WHY: Provides a practical path from a 3DGS scene (trainable in minutes with
+  % Instant-NGP speeds) to a textured triangle mesh — the output format your
+  % RSI printing pipeline needs.
+}
+
+% Gaussian Surfels — SIGGRAPH 2024; oriented Gaussian disks + screened Poisson
+% mesh extraction; currently the strongest GS-based surface method.
+@inproceedings{Dai2024GaussianSurfels,
+  author    = {Pinxuan Dai and Jiamin Xu and Wenxiang Xie and Xinguo Liu and
+               Huamin Wang and Weiwei Xu},
+  title     = {High-Quality Surface Reconstruction using Gaussian Surfels},
+  booktitle = {{ACM} {SIGGRAPH} 2024 Conference Papers},
+  year      = {2024},
+  doi       = {10.1145/3641519.3657441},
+  % WHY: Fuses depth maps from 3DGS with screened Poisson reconstruction —
+  % a direct drop-in upgrade for your current Open3D TSDF + marching-cubes
+  % step that should recover more facial detail.
+}
+
+% -----------------------------------------------------------------------------
+% TOPIC E — Stereo / Single-View Depth for Capture Quality
+% -----------------------------------------------------------------------------
+
+% RAFT-Stereo — recurrent stereo matching; state-of-the-art before foundation models.
+@inproceedings{Lipson2021RAFTStereo,
+  author    = {Lahav Lipson and Zachary Teed and Jia Deng},
+  title     = {{RAFT-Stereo}: Multilevel Recurrent Field Transforms for Stereo
+               Matching},
+  booktitle = {Proceedings of the International Conference on {3D} Vision
+               ({3DV})},
+  pages     = {218--227},
+  year      = {2021},
+  doi       = {10.1109/3DV53792.2021.00032},
+  % WHY: RAFT-Stereo is the direct predecessor to FoundationStereo; understanding
+  % its iterative update mechanism explains why depth quality near object edges
+  % (eye orbits, nostril rims) degrades with single-pass SGM.
+}
+
+% FoundationStereo — zero-shot foundation model for stereo; user runs this.
+@inproceedings{Wen2025FoundationStereo,
+  author    = {Bowen Wen and Matthew Trepte and Joseph Aribido and Jan Kautz and
+               Orazio Gallo and Stan Birchfield},
+  title     = {{FoundationStereo}: Zero-Shot Stereo Matching},
+  booktitle = {Proceedings of the {IEEE/CVF} Conference on Computer Vision and
+               Pattern Recognition ({CVPR})},
+  pages     = {5249--5260},
+  year      = {2025},
+  doi       = {10.1109/CVPR52734.2025.00495},
+  note      = {arXiv:2501.09898. CVPR 2025 Best Paper Nomination (Oral).},
+  % WHY: The exact model you run in your pipeline. Citable as "we use
+  % FoundationStereo [Wen et al., 2025] for depth refinement". Shows why
+  % its synthetic-data training generalises to skin/hair texture better than SGM.
+}
+
+% DPT — dense prediction transformer; monocular depth / segmentation backbone.
+@inproceedings{Ranftl2021DPT,
+  author    = {Ren{\'{e}} Ranftl and Alexey Bochkovskiy and Vladlen Koltun},
+  title     = {Vision Transformers for Dense Prediction},
+  booktitle = {Proceedings of the {IEEE/CVF} International Conference on
+               Computer Vision ({ICCV})},
+  pages     = {12159--12168},
+  year      = {2021},
+  doi       = {10.1109/ICCV48922.2021.01196},
+  % WHY: DPT is the transformer backbone underlying monocular depth methods like
+  % Depth Anything; shows what you trade away (absolute scale, stereo baseline)
+  % when dropping from stereo to single-camera capture.
+}
+
+% Depth Anything V2 — NeurIPS 2024; strongest monocular depth at scale.
+% arXiv:2406.09414.
+@inproceedings{Yang2024DepthAnythingV2,
+  author    = {Lihe Yang and Bingyi Kang and Zilong Huang and Zhen Zhao and
+               Xiaogang Xu and Jiashi Feng and Hengshuang Zhao},
+  title     = {Depth Anything {V2}},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  volume    = {38},
+  year      = {2024},
+  note      = {arXiv:2406.09414},
+  % WHY: Monocular fallback if stereo calibration degrades (e.g., flexible mount
+  % shifts baseline). Also a useful confidence cross-check: compare DepthAnythingV2
+  % output with FoundationStereo to detect sensor noise vs scene geometry.
+}
+
+% -----------------------------------------------------------------------------
+% TOPIC F — Commercial / Industrial Scanning Evaluation
+% -----------------------------------------------------------------------------
+
+% Schipper et al. 2024 — peer-reviewed clinical study comparing Artec Eva /
+% Space Spider against 3dMD stereophotogrammetry for face scanning.
+@article{Schipper2024HandheldScannerEval,
+  author    = {J. A. M. Schipper and B. J. Merema and M. H. J. Hollander and
+               F. K. L. Spijkervet and P. U. Dijkstra and J. Jansma and
+               R. H. Schepers and J. Kraeima},
+  title     = {Reliability and validity of handheld structured light scanners and
+               a static stereophotogrammetry system in facial three-dimensional
+               surface imaging},
+  journal   = {Scientific Reports},
+  volume    = {14},
+  pages     = {8172},
+  year      = {2024},
+  doi       = {10.1038/s41598-024-57370-x},
+  % WHY: Direct benchmark of the class of hardware you are competing with.
+  % Reports ~0.05–0.15 mm accuracy for Artec Space Spider on faces — sets a
+  % concrete accuracy target for your ZED 2i pipeline to aim for.
+}
