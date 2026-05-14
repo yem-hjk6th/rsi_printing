@@ -18,6 +18,33 @@ Naming convention (user-defined): reconstruction variants are siblings of
 `artec_ffs/`, named `ffs_<technical-route>_<core-change>`. Harder paradigms get
 their own packages — see "Upcoming" below.
 
+## Environment / first run on a new machine
+
+**Before anything else, run the self-check** — it verifies every dependency and
+prints the exact fix command for whatever is missing:
+
+    conda activate ffs
+    python Vision/ffs_poisson_detail/_smoke_test.py
+
+Full bootstrap chain for a fresh Windows machine (the `ffs` conda env needs all
+of these; the self-check tells you which are missing):
+
+1. `python "C:\Program Files (x86)\ZED SDK\get_python_api.py"` — installs the
+   `pyzed` wheel matching the env's Python version.
+2. `pip install --index-url https://download.pytorch.org/whl/cu128 --upgrade torch torchvision`
+   — CUDA-enabled PyTorch. **Gotcha:** a plain `pip install torch` on Windows
+   installs the CPU-only wheel (`torch x.y.z+cpu`) from PyPI; CUDA wheels live
+   ONLY on PyTorch's index. Symptom: `torch.cuda.is_available()` is False on a
+   machine with a real GPU. The self-check detects this and prints this fix.
+3. `pip install triton-windows` — required for the FFS `torch.compile` path;
+   without it `--ffs` raises `TritonMissing`. (Linux torch bundles triton; the
+   Windows wheel does not.)
+4. Create `Vision/ffs_poisson_detail/config_local.py` with this machine's
+   `FFS_REPO_ROOT` (gitignored, per-machine — see README).
+
+This section is the repo-tracked source of truth. Machine-local memory may have
+more (`project_artec_ffs_localization.md`) but other machines won't see that.
+
 ## Current direction
 
 Stay on the **volumetric depth-fusion** route (KinectFusion lineage) and squeeze
@@ -76,7 +103,11 @@ See `doc/refs/reconstruction_intro_summary.md` and `reconstruction_tools_survey.
 
 ## Pointers
 
+- Environment bootstrap + self-check: the "Environment" section above +
+  `_smoke_test.py` (both repo-tracked, visible on every machine).
 - Research dossier (verified citations + tool survey): `doc/refs/`
-- Machine setup / FFS_REPO_ROOT side-channel: see artec_ffs README + memory
-  `project_artec_ffs_localization.md`, `reference_local_config_pattern.md`
 - `config_local.py` is per-machine and gitignored — recreate it on a new box.
+- Machine-local memory (only on the machine it was written on, NOT in the repo):
+  `~/.claude/projects/.../memory/` has `project_artec_ffs_localization.md`,
+  `project_ffs_poisson_detail.md`, etc. with more history — but never rely on it
+  being present; the repo-tracked files above are the portable source of truth.
